@@ -1,26 +1,439 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --menu-bg: #F6EFE3;
+  --navbar-bg: #302014;
+  --cart-btn: #49D234;
+  --sidebar-bg: #D9D9D9;
+  --register-btn: #D9D9D9;
+  --cancel-btn: #F6EFE3;
+  --add-btn: #F6EFE3;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--menu-bg);
+  margin: 0;
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  color: #333;
+}
+
+/* Layout principal */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.home-header {
+  background-color: var(--navbar-bg);
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-decoration: none;
+}
+
+.login-btn {
+  background-color: transparent;
+  border: 1px solid white !important;
+  color: white;
+  align-items: center;
+}
+
+.register-btn {
+  background-color: var(--register-btn);
+  color: var(--navbar-bg);
+}
+
+/* Contenido principal */
+.main-content {
+  flex: 1;
+  padding: 0;
+}
+
+.landing-container {
+  display: flex; /* Volver a flex para el layout normal */
+  min-height: calc(100vh - 80px);
+  padding-top: 0;
+}
+
+.logo-fixed {
+  position: fixed;
+  top: 100px; /* Más abajo del navbar */
+  left: 15px;
+  z-index: 100;
+  padding: 12px;
+  transition: all 0.3s ease;
+}
+
+.logo-fixed:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.logo-fixed .main-logo {
+  height: 70px;
+  width: auto;
+  border-radius: 8px;
+}
+
+.sidebar {
+  width: 300px;
+  background-color: var(--sidebar-bg);
+  box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+  border-radius: 0;
+  min-height: calc(100vh - 160px); /* Altura mínima para que no tape el footer */
+  position: static; /* Posición normal en el flujo del documento */
+  padding: 2rem 0; /* Volver al padding normal */
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem;
+}
+
+.nav-item {
+  padding: 1.2rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  font-weight: 500;
+  color: #666;
+  background-color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.nav-item.disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.nav-item:hover:not(.disabled) {
+  background-color: rgba(255,255,255,0.8);
+  color: var(--navbar-bg);
+  transform: translateX(-5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Área principal del overview */
+.main-overview {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 100px; /* Espacio para que no interfiera con el logo */
+  padding-right: 1rem; /* Padding normal a la derecha */
+  padding-top: 20px; /* Espacio desde el navbar */
+}
+
+.search-container {
+  margin-bottom: 2.5rem;
+  display: flex;
+  justify-content: center; /* Centrar la barra de búsqueda */
+}
+
+.search-input {
+  width: 100%;
+  max-width: 600px; /* Aumentar el ancho máximo */
+  padding: 1rem 1.5rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 30px;
+  font-size: 1rem;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--navbar-bg);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.search-input.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #f8f8f8;
+}
+
+.popular-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--navbar-bg);
+}
+
+.restaurant-card {
+  background-color: white;
+  border-radius: 15px;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  border: 1px solid #e5e5e5;
+}
+
+.restaurant-card:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.restaurant-image {
+  width: 100px;
+  height: 100px;
+  margin-right: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.restaurant-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.restaurant-info {
+  flex: 1;
+}
+
+.restaurant-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--navbar-bg);
+}
+
+.restaurant-location {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.home-footer {
+  background-color: var(--navbar-bg);
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Estilos para autenticación */
+.auth-container {
+  display: flex;
+  min-height: calc(100vh - 120px);
+}
+
+.auth-form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--menu-bg);
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-section .auth-logo {
+  height: 80px;
+  width: auto;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.logo-section h2 {
+  color: var(--navbar-bg);
+  margin: 0.5rem 0;
+  font-size: 2rem;
+}
+
+.logo-section p {
+  color: #666;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--navbar-bg);
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--navbar-bg);
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--navbar-bg);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 1rem;
+}
+
+.auth-btn:hover {
+  background-color: #1f1309;
+}
+
+.auth-link {
+  text-align: center;
+  color: #666;
+}
+
+.auth-link a {
+  color: var(--navbar-bg);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
+.auth-image {
+  flex: 1;
+  position: relative;
+  min-height: 400px;
+}
+
+.cafe-bg {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    rgba(48, 32, 20, 0.3),
+    rgba(48, 32, 20, 0.3)
+  ), url('/cafe-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 0 15px 15px 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .landing-container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 80px); /* Ajustar para móviles */
+  }
+  
+  .main-overview {
+    margin-left: 80px; /* Menos margen en móviles */
+    padding: 1rem;
+    padding-top: 10px;
+    padding-right: 1rem; /* Padding normal en móviles */
+  }
+  
+  .logo-fixed {
+    top: 90px;
+    left: 8px;
+    padding: 8px;
+  }
+  
+  .logo-fixed .main-logo {
+    height: 35px;
+  }
+  
+  .sidebar {
+    width: 100%;
+    padding: 1rem 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    border-radius: 0;
+    min-height: auto; /* Altura automática en móviles */
+    position: static; /* Mantener estático en móviles */
+  }
+  
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0.5rem;
+  }
+  
+  .nav-item {
+    white-space: nowrap;
+    padding: 0.8rem 1rem;
+    min-width: 120px;
+    text-align: center;
+  }
+  
+  .home-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .auth-container {
+    flex-direction: column;
+  }
+  
+  .auth-image {
+    min-height: 200px;
+  }
+  
+  .cafe-bg {
+    border-radius: 15px 15px 0 0;
+  }
 }
