@@ -84,7 +84,7 @@ body {
 
 .logo-fixed {
   position: fixed;
-  top: 100px; /* Más abajo del navbar */
+  top: 80px; /* Más abajo del navbar */
   left: 15px;
   z-index: 100;
   padding: 12px;
