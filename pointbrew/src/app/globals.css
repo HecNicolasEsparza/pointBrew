@@ -373,6 +373,73 @@ body {
   border-radius: 0 15px 15px 0;
 }
 
+.ticket-generated-container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+}
+
+.ticket-generated-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: #D9D9D9;
+  max-width: 50%;
+  max-height: 50%;
+  width: 50%;
+  height: 50%;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.ticket-generated-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.ticket-generated-logo {
+  height: 80px;
+  width: auto;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.ticket-generated-header h2 {
+  color: var(--navbar-bg);
+  margin: 0.5rem 0;
+  font-size: 2rem;
+}
+
+.ticket-generated-header p {
+  color: #666;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.ticket-generated-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #52EE74;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 1rem;
+}
+
+.ticket-generated-btn:hover {
+  background-color: #1f1309;
+}
+
+
+
 /* Responsive */
 @media (max-width: 768px) {
   .landing-container {
