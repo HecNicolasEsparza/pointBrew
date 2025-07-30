@@ -2,8 +2,8 @@ const sql = require('mssql');
 require('dotenv').config();
 
 const config = {
-  user: process.env.DB_USER || 'sa',
-  password: process.env.DB_PASSWORD || 'your_password',
+  user: process.env.DB_USER || 'PB_admin',
+  password: process.env.DB_PASSWORD || '1234',
   server: process.env.DB_SERVER || 'localhost',
   database: process.env.DB_NAME || 'PointBrewDB',
   options: {
