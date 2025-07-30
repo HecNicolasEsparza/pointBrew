@@ -1,0 +1,124 @@
+.menu-container {
+  display: flex;
+  background-color: #d9d9d9;
+  border-radius: 1rem;
+  overflow: hidden;
+  max-width: 1200px;
+  margin: 2rem auto;
+  min-height: 400px;
+}
+
+/* Imagen lateral */
+.menu-image-side {
+  width: 25%;
+  min-width: 200px;
+  height: 100%;
+}
+
+.menu-image-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 1rem 0 0 1rem;
+}
+
+/* Contenedor de tarjetas */
+.menu-vertical-box {
+  width: 75%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  align-items: start;
+}
+
+/* Título centrado */
+.menu-title {
+  color: #4b2e20;
+  font-size: 1.8rem;
+  text-align: center;
+  grid-column: 1/-1;
+}
+
+/* Tarjeta */
+.reduced-box {
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Imagen de platillo */
+.menu-top-image {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+}
+
+.menu-top-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Descripción */
+.menu-description {
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 1rem;
+  flex-grow: 1;
+}
+
+/* Acciones */
+.menu-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem 1rem;
+}
+
+.cart-btn {
+  background-color: #4b2e20;
+  color: white; 
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-btn img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  display: block;
+}
+
+
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.counter button {
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.5rem;
+  border: none;
+  background-color: #d9d9d9;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.counter span {
+  min-width: 2ch;
+  text-align: center;
+  font-weight: bold;
+}
