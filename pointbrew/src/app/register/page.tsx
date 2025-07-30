@@ -5,6 +5,10 @@ export default function Register() {
   return (
     <MockupLayout title="Point Brew" showAuthButtons={false}>
       <div className="auth-container">
+        <div className="auth-image">
+          <div className="cafe-bg"></div>
+        </div>
+        
         <div className="auth-form-container">
           <div className="logo-section">
             <img src="/img/Logo.png" alt="Point Brew Logo" className="auth-logo" />
@@ -36,10 +40,6 @@ export default function Register() {
               ¿Ya tienes una cuenta? <Link href="/login">Inicia sesión</Link>
             </p>
           </form>
-        </div>
-        
-        <div className="auth-image">
-          <div className="cafe-bg"></div>
         </div>
       </div>
     </MockupLayout>

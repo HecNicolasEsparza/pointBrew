@@ -1,5 +1,6 @@
 import MockupLayout from '@/components/MockupLayout';
-import Link from 'next/link';
+import RestaurantCarousel from '@/components/RestaurantCarousel';
+import RestaurantList from '@/components/RestaurantList';
 
 export default function Home() {
   return (
@@ -26,35 +27,11 @@ export default function Home() {
           <section className="popular-section">
             <h2 className="section-title">Lo más popular el día</h2>
             
-            <div className="restaurant-card">
-              <div className="restaurant-image">
-                <img src="/img/kfc-placeholder.jpg" alt="KFC" className="restaurant-img" />
-              </div>
-              <div className="restaurant-info">
-                <h3 className="restaurant-name">Pollo KFC</h3>
-                <p className="restaurant-location">Dirección: Villa Asunción</p>
-              </div>
-            </div>
-
-            <div className="restaurant-card">
-              <div className="restaurant-image">
-                <img src="/img/burger-placeholder.jpg" alt="Hamburguesas" className="restaurant-img" />
-              </div>
-              <div className="restaurant-info">
-                <h3 className="restaurant-name">Hamburguesas Gourmet</h3>
-                <p className="restaurant-location">Dirección: Centro</p>
-              </div>
-            </div>
-
-            <div className="restaurant-card">
-              <div className="restaurant-image">
-                <img src="/img/pizza-placeholder.jpg" alt="Pizza" className="restaurant-img" />
-              </div>
-              <div className="restaurant-info">
-                <h3 className="restaurant-name">Pizza Italiana</h3>
-                <p className="restaurant-location">Dirección: Centro Histórico</p>
-              </div>
-            </div>
+            {/* Carrusel de restaurante destacado */}
+            <RestaurantCarousel />
+            
+            {/* Lista de restaurantes desde el backend */}
+            <RestaurantList />
           </section>
         </div>
 

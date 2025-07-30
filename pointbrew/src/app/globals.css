@@ -1,7 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   --menu-bg: #F6EFE3;
   --navbar-bg: #302014;
@@ -34,6 +30,12 @@ body {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  right: 0; /* Cambiar width: 100% por right: 0 */
+  z-index: 1000; 
+  padding: 0.5rem 2rem; 
 }
 
 .logo {
@@ -79,7 +81,7 @@ body {
 .landing-container {
   display: flex; /* Volver a flex para el layout normal */
   min-height: calc(100vh - 80px);
-  padding-top: 0;
+  padding-top: 80px; /* Agregar padding desde el navbar */
 }
 
 .logo-fixed {
@@ -89,6 +91,13 @@ body {
   z-index: 100;
   padding: 12px;
   transition: all 0.3s ease;
+  /* Solo mostrar en páginas que NO son de autenticación */
+  display: none;
+}
+
+/* Mostrar el logo fijo solo en páginas específicas (no auth) */
+.landing-container .logo-fixed {
+  display: block;
 }
 
 .logo-fixed:hover {
@@ -147,9 +156,9 @@ body {
 .main-overview {
   flex: 1;
   padding: 2rem;
-  margin-left: 100px; /* Espacio para que no interfiera con el logo */
+  margin-left: 80px; /* Espacio para que no interfiera con el logo */
   padding-right: 1rem; /* Padding normal a la derecha */
-  padding-top: 20px; /* Espacio desde el navbar */
+  padding-top: 20px; /* Aumentar espacio desde el navbar */
 }
 
 .search-container {
@@ -180,6 +189,213 @@ body {
   opacity: 0.7;
   cursor: not-allowed;
   background-color: #f8f8f8;
+}
+
+/* Estilos para el carrusel de restaurantes */
+.featured-restaurant {
+  margin-bottom: 2rem;
+}
+
+.carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--navbar-bg);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-btn:hover {
+  background-color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.carousel-prev {
+  left: 15px;
+}
+
+.carousel-next {
+  right: 15px;
+}
+
+.carousel-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot.active {
+  background-color: white;
+  transform: scale(1.2);
+}
+
+.carousel-dot:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.restaurant-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  color: white;
+  padding: 2rem;
+  z-index: 5;
+}
+
+.featured-restaurant-name {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.featured-restaurant-location {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.9;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Grid de restaurantes moderno */
+.restaurant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.restaurant-card-modern {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.restaurant-card-modern:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.restaurant-image-container {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  position: relative;
+}
+
+.restaurant-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.restaurant-card-modern:hover .restaurant-card-image {
+  transform: scale(1.05);
+}
+
+.restaurant-card-content {
+  padding: 1.5rem;
+}
+
+.restaurant-card-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--navbar-bg);
+  margin: 0 0 0.5rem 0;
+}
+
+.restaurant-card-location {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.restaurant-card-description {
+  color: #888;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Loading spinner */
+.restaurant-list-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--navbar-bg);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .popular-section {
@@ -255,7 +471,9 @@ body {
 /* Estilos para autenticación */
 .auth-container {
   display: flex;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 80px);
+  background-color: #f5f1eb;
+  padding-top: 40px; /* Espacio para el header fijo */
 }
 
 .auth-form-container {
@@ -264,8 +482,9 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  background-color: var(--menu-bg);
+  padding: 3rem;
+  background-color: #f5f1eb;
+  max-width: 45%;
 }
 
 .logo-section {
@@ -274,22 +493,24 @@ body {
 }
 
 .logo-section .auth-logo {
-  height: 80px;
+  height: 60px;
   width: auto;
   border-radius: 12px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .logo-section h2 {
   color: var(--navbar-bg);
   margin: 0.5rem 0;
-  font-size: 2rem;
+  font-size: 2.2rem;
+  font-weight: bold;
 }
 
 .logo-section p {
-  color: #666;
+  color: #8b6f47;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .auth-form {
@@ -304,49 +525,57 @@ body {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: var(--navbar-bg);
+  color: #8b6f47;
   font-weight: 500;
+  font-size: 1rem;
 }
 
 .form-group input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  padding: 1rem;
+  border: none;
+  border-radius: 25px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  background-color: #e8ddd1;
+  transition: all 0.3s;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: var(--navbar-bg);
+  background-color: #ddd2c4;
+  box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
 }
 
 .auth-btn {
   width: 100%;
-  padding: 0.75rem;
+  padding: 1rem;
   background-color: var(--navbar-bg);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
-  margin-bottom: 1rem;
+  transition: all 0.3s;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
 }
 
 .auth-btn:hover {
   background-color: #1f1309;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(48, 32, 20, 0.3);
 }
 
 .auth-link {
   text-align: center;
-  color: #666;
+  color: #8b6f47;
+  font-size: 0.95rem;
 }
 
 .auth-link a {
-  color: var(--navbar-bg);
+  color: #4a90e2;
   text-decoration: none;
   font-weight: 500;
 }
@@ -358,19 +587,18 @@ body {
 .auth-image {
   flex: 1;
   position: relative;
-  min-height: 400px;
+  min-height: calc(100vh - 80px);
+  background: url('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') center/cover;
 }
 
 .cafe-bg {
   width: 100%;
   height: 100%;
   background: linear-gradient(
-    rgba(48, 32, 20, 0.3),
-    rgba(48, 32, 20, 0.3)
-  ), url('/cafe-bg.jpg');
-  background-size: cover;
-  background-position: center;
-  border-radius: 0 15px 15px 0;
+    45deg,
+    rgba(48, 32, 20, 0.4),
+    rgba(139, 111, 71, 0.3)
+  );
 }
 
 /* Responsive */
@@ -379,12 +607,13 @@ body {
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 80px); /* Ajustar para móviles */
+    padding-top: 80px; /* Agregar padding en móviles también */
   }
   
   .main-overview {
     margin-left: 80px; /* Menos margen en móviles */
     padding: 1rem;
-    padding-top: 10px;
+    padding-top: 20px; /* Reducir padding top en móviles */
     padding-right: 1rem; /* Padding normal en móviles */
   }
   
@@ -427,13 +656,115 @@ body {
   
   .auth-container {
     flex-direction: column;
+    min-height: calc(100vh - 80px);
+    padding-top: 80px; /* Mantener el espacio del header en móviles */
+  }
+  
+  .auth-form-container {
+    max-width: 100%;
+    padding: 2rem 1.5rem;
+    order: 2;
   }
   
   .auth-image {
-    min-height: 200px;
+    min-height: 40vh;
+    order: 1;
   }
   
   .cafe-bg {
-    border-radius: 15px 15px 0 0;
+    border-radius: 0;
+  }
+  
+  .logo-section h2 {
+    font-size: 1.8rem;
+  }
+  
+  .form-group input {
+    padding: 0.9rem;
+  }
+  
+  .auth-btn {
+    padding: 0.9rem;
+    font-size: 1rem;
+  }
+
+  /* Responsive para carrusel */
+  .carousel-wrapper {
+    height: 200px;
+  }
+
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .carousel-prev {
+    left: 10px;
+  }
+
+  .carousel-next {
+    right: 10px;
+  }
+
+  .restaurant-overlay {
+    padding: 1.5rem;
+  }
+
+  .featured-restaurant-name {
+    font-size: 1.4rem;
+  }
+
+  .featured-restaurant-location {
+    font-size: 1rem;
+  }
+
+  /* Grid responsivo */
+  .restaurant-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .restaurant-image-container {
+    height: 150px;
+  }
+
+  .restaurant-card-content {
+    padding: 1rem;
+  }
+
+  .restaurant-card-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-overview {
+    margin-left: 60px;
+    padding: 0.5rem;
+  }
+
+  .carousel-container {
+    border-radius: 15px;
+  }
+
+  .carousel-wrapper {
+    height: 180px;
+  }
+
+  .restaurant-overlay {
+    padding: 1rem;
+  }
+
+  .featured-restaurant-name {
+    font-size: 1.2rem;
+  }
+
+  .featured-restaurant-location {
+    font-size: 0.9rem;
+  }
+
+  .restaurant-card-content {
+    padding: 0.8rem;
   }
 }
