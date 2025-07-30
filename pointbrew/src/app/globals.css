@@ -382,6 +382,7 @@ body {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 .order-state-container {
   display: flex;
@@ -494,21 +495,78 @@ body {
 
 .ticket-generated-header {
 >>>>>>> ticketGenerated
+=======
+.choose-payment-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.choose-payment-form-container {
+  background-color: #D9D9D9;
+  padding: 2rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.credit-card-table {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+.credit-card-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.credit-card-table th,
+.credit-card-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.credit-card-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.choose-payment-logo-section {
+>>>>>>> choosePaymentMethod
   text-align: center;
   margin-bottom: 2rem;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 .logo-buttom .auth-logo {
 =======
 .ticket-generated-logo {
 >>>>>>> ticketGenerated
+=======
+.choose-payment-logo {
+>>>>>>> choosePaymentMethod
   height: 80px;
   width: auto;
   border-radius: 12px;
   margin-bottom: 1rem;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 
@@ -660,21 +718,65 @@ body {
 
 =======
 .ticket-generated-header h2 {
+=======
+.choose-payment-logo-section h2 {
+>>>>>>> choosePaymentMethod
   color: var(--navbar-bg);
   margin: 0.5rem 0;
   font-size: 2rem;
 }
 
+<<<<<<< HEAD
 .ticket-generated-header p {
+=======
+.choose-payment-logo-section p {
+>>>>>>> choosePaymentMethod
   color: #666;
   margin: 0;
   font-size: 1.1rem;
 }
 
+<<<<<<< HEAD
 .ticket-generated-btn {
   width: 100%;
   padding: 0.75rem;
   background-color: #52EE74;
+=======
+.choose-payment-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.choose-payment-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.choose-payment-form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--navbar-bg);
+  font-weight: 500;
+}
+
+.choose-payment-form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.choose-payment-form-group input:focus {
+  outline: none;
+  border-color: var(--navbar-bg);
+}
+
+.choose-payment-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--navbar-bg);
+>>>>>>> choosePaymentMethod
   color: white;
   border: none;
   border-radius: 8px;
@@ -685,10 +787,39 @@ body {
   margin-bottom: 1rem;
 }
 
+<<<<<<< HEAD
 .ticket-generated-btn:hover {
   background-color: #1f1309;
 }
 
+=======
+.choose-payment-btn:hover {
+  background-color: #1f1309;
+}
+
+.choose-payment-link {
+  text-align: center;
+  color: #666;
+}
+
+.choose-payment-link a {
+  color: var(--navbar-bg);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.choose-payment-link a:hover {
+  text-decoration: underline;
+}
+
+.choose-payment-image {
+  flex: 1;
+  position: relative;
+  min-height: 400px;
+}
+
+
+>>>>>>> choosePaymentMethod
 
 
 /* Responsive */
