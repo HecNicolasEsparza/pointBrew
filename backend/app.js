@@ -8,6 +8,7 @@ const { connectDB } = require('./config/database');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var authRouter = require('./routes/auth');
 var branchesRouter = require('./routes/branches');
 var storesRouter = require('./routes/stores');
 var productsRouter = require('./routes/products');
@@ -31,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use('/', indexRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/branches', branchesRouter);
 app.use('/api/stores', storesRouter);
@@ -38,6 +40,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/tickets', ticketsRouter);
 app.use('/api/turns', turnsRouter);
 app.use('/api/catalog', catalogRouter);
+// app.use('/api/store-registration', storeRegistrationRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

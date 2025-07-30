@@ -23,6 +23,7 @@ CREATE TABLE [User] (
   user_id      INT           PRIMARY KEY IDENTITY,
   full_name    VARCHAR(100)  NOT NULL,
   email        VARCHAR(100)  NOT NULL UNIQUE,
+  password     VARCHAR(255)  NOT NULL,
   role_id      INT           NOT NULL
     REFERENCES Role(role_id),
   created_at   DATETIME      DEFAULT GETDATE(),
