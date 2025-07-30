@@ -381,6 +381,65 @@ body {
   border-radius: 0 15px 15px 0;
 }
 
+.choose-payment-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.choose-payment-form-container {
+  background-color: #D9D9D9;
+  padding: 2rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.credit-card-table {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+.credit-card-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.credit-card-table th,
+.credit-card-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.credit-card-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.choose-payment-logo-section {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.choose-payment-logo-section h2 {
+  color: var(--navbar-bg);
+  margin: 0.5rem 0;
+  font-size: 2rem;
+}
 
 
 .order-state-container {
