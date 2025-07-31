@@ -6,7 +6,7 @@ import MockupLayout from '@/components/MockupLayout';
 import axios from 'axios';
 
 export default function RegisterStorePage() {
-  const { user, isAuthenticated, setUser } = useAuth();
+  const { user, isAuthenticated, setUser, token } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,10 +40,11 @@ export default function RegisterStorePage() {
     setSuccess('');
 
     try {
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth-token='))
-        ?.split('=')[1];
+      // Use token from auth context
+      if (!token) {
+        setError('No hay token de autenticación. Por favor, inicia sesión nuevamente.');
+        return;
+      }
 
       const response = await axios.post(
         'http://localhost:3001/api/stores/register',
