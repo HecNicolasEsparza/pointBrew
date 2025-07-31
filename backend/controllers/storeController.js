@@ -178,6 +178,89 @@ const storeController = {
         error: error.message
       });
     }
+  },
+
+  // Register new store and make user admin
+  registerUserStore: async (req, res) => {
+    try {
+      const { storeName, storeDescription, branchName, branchAddress } = req.body;
+      const userId = req.user.userId; // Del middleware de autenticación
+
+      // Validación básica
+      if (!storeName || !branchName || !branchAddress) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nombre de tienda, sucursal y dirección son requeridos'
+        });
+      }
+
+      const pool = getPool();
+      const transaction = new sql.Transaction(pool);
+
+      try {
+        await transaction.begin();
+
+        // 1. Crear la sucursal (Branch)
+        const branchResult = await transaction.request()
+          .input('name', sql.VarChar(100), branchName)
+          .input('address', sql.VarChar(150), branchAddress)
+          .query(`
+            INSERT INTO Branch (name, address) 
+            OUTPUT INSERTED.branch_id
+            VALUES (@name, @address)
+          `);
+
+        const branchId = branchResult.recordset[0].branch_id;
+
+        // 2. Crear la tienda (Store)
+        const storeResult = await transaction.request()
+          .input('branch_id', sql.Int, branchId)
+          .input('name', sql.VarChar(100), storeName)
+          .input('description', sql.VarChar(50), storeDescription || null)
+          .query(`
+            INSERT INTO Store (branch_id, name, description) 
+            OUTPUT INSERTED.store_id
+            VALUES (@branch_id, @name, @description)
+          `);
+
+        const storeId = storeResult.recordset[0].store_id;
+
+        // 3. Actualizar el rol del usuario a Admin (role_id = 1)
+        await transaction.request()
+          .input('user_id', sql.Int, userId)
+          .input('role_id', sql.Int, 1) // 1 = Admin según el schema
+          .query(`
+            UPDATE [User] 
+            SET role_id = @role_id, updated_at = GETDATE()
+            WHERE user_id = @user_id
+          `);
+
+        await transaction.commit();
+
+        res.status(201).json({
+          success: true,
+          message: 'Tienda registrada exitosamente. Ahora eres administrador.',
+          data: {
+            storeId,
+            branchId,
+            storeName,
+            branchName
+          }
+        });
+
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+
+    } catch (error) {
+      console.error('Error registrando tienda:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error interno del servidor',
+        error: error.message
+      });
+    }
   }
 };
 

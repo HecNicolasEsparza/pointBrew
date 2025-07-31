@@ -1,8 +1,12 @@
+'use client';
 import MockupLayout from '@/components/MockupLayout';
 import RestaurantCarousel from '@/components/RestaurantCarousel';
 import RestaurantList from '@/components/RestaurantList';
+import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
   return (
     <MockupLayout title="Point Brew" showAuthButtons={true}>
       {/* Logo fijo en la parte superior izquierda */}
@@ -13,13 +17,13 @@ export default function Home() {
       <div className="landing-container">
 
         <div className="main-overview">
-          {/* Barra de búsqueda (disabled) */}
+          {/* Barra de búsqueda */}
           <div className="search-container">
             <input 
               type="text" 
               placeholder="Buscar tu local" 
-              className="search-input disabled"
-              disabled
+              className={`search-input ${!isAuthenticated ? 'disabled' : ''}`}
+              disabled={!isAuthenticated}
             />
           </div>
 
@@ -38,10 +42,24 @@ export default function Home() {
         {/* Sidebar de navegación del lado derecho */}
         <aside className="sidebar">
           <nav className="sidebar-nav">
-            <div className="nav-item disabled">Inicio</div>
-            <div className="nav-item disabled">Ofertas</div>
-            <div className="nav-item disabled">Administrar Trabajo</div>
-            <div className="nav-item disabled">Registrar una tienda</div>
+            <Link href="/" className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
+              Inicio
+            </Link>
+            <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
+              Ofertas
+            </div>
+            <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
+              Administrar Trabajo
+            </div>
+            {isAuthenticated ? (
+              <Link href="/register-store" className="nav-item">
+                Registrar una tienda
+              </Link>
+            ) : (
+              <div className="nav-item disabled">
+                Registrar una tienda
+              </div>
+            )}
           </nav>
         </aside>
       </div>
