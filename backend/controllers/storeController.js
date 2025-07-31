@@ -28,6 +28,37 @@ const storeController = {
     }
   },
 
+  // Get stores owned by current user
+  getMyStores: async (req, res) => {
+    try {
+      const userId = req.user.user_id;
+      const pool = getPool();
+      
+      const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query(`
+          SELECT s.store_id, s.name, s.description, s.created_at, s.updated_at,
+                 b.name as branch_name, b.address as branch_address
+          FROM Store s
+          INNER JOIN Branch b ON s.branch_id = b.branch_id
+          WHERE s.owner_id = @userId OR s.owner_id IS NULL
+          ORDER BY s.created_at DESC
+        `);
+      
+      res.json({
+        success: true,
+        data: result.recordset
+      });
+    } catch (error) {
+      console.error('Error getting user stores:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error retrieving user stores',
+        error: error.message
+      });
+    }
+  },
+
   // Get store by ID
   getStoreById: async (req, res) => {
     try {
@@ -175,6 +206,96 @@ const storeController = {
       res.status(500).json({
         success: false,
         message: 'Error deleting store',
+        error: error.message
+      });
+    }
+  },
+
+  // Register new store and make user admin
+  registerUserStore: async (req, res) => {
+    try {
+      const { storeName, storeDescription, branchName, branchAddress } = req.body;
+      const userId = req.user.user_id; // Usar user_id en lugar de userId
+      
+      console.log('Register store request:', { storeName, branchName, branchAddress, userId });
+
+      // Validación básica
+      if (!storeName || !branchName || !branchAddress) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nombre de tienda, sucursal y dirección son requeridos'
+        });
+      }
+
+      const pool = getPool();
+      const transaction = new sql.Transaction(pool);
+
+      try {
+        await transaction.begin();
+
+        // 1. Crear la sucursal (Branch)
+        const branchResult = await transaction.request()
+          .input('name', sql.VarChar(100), branchName)
+          .input('address', sql.VarChar(150), branchAddress)
+          .query(`
+            INSERT INTO Branch (name, address) 
+            OUTPUT INSERTED.branch_id
+            VALUES (@name, @address)
+          `);
+
+        const branchId = branchResult.recordset[0].branch_id;
+
+        // 2. Crear la tienda (Store) con owner_id
+        const storeResult = await transaction.request()
+          .input('branch_id', sql.Int, branchId)
+          .input('name', sql.VarChar(100), storeName)
+          .input('description', sql.VarChar(50), storeDescription || null)
+          .input('owner_id', sql.Int, userId)
+          .query(`
+            INSERT INTO Store (branch_id, name, description, owner_id) 
+            OUTPUT INSERTED.store_id
+            VALUES (@branch_id, @name, @description, @owner_id)
+          `);
+
+        const storeId = storeResult.recordset[0].store_id;
+
+        // 3. Actualizar el rol del usuario a Admin (role_id = 1)
+        console.log('Updating user role for userId:', userId);
+        const updateResult = await transaction.request()
+          .input('user_id', sql.Int, userId)
+          .input('role_id', sql.Int, 1) // 1 = Admin según el schema
+          .query(`
+            UPDATE [User] 
+            SET role_id = @role_id, updated_at = GETDATE()
+            WHERE user_id = @user_id
+          `);
+        
+        console.log('User role update result:', updateResult.rowsAffected);
+
+        await transaction.commit();
+        console.log('Transaction committed successfully');
+
+        res.status(201).json({
+          success: true,
+          message: 'Tienda registrada exitosamente. Ahora eres administrador.',
+          data: {
+            storeId,
+            branchId,
+            storeName,
+            branchName
+          }
+        });
+
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+
+    } catch (error) {
+      console.error('Error registrando tienda:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error interno del servidor',
         error: error.message
       });
     }

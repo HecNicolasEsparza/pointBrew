@@ -8,6 +8,7 @@ const { connectDB } = require('./config/database');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var authRouter = require('./routes/auth');
 var branchesRouter = require('./routes/branches');
 var storesRouter = require('./routes/stores');
 var productsRouter = require('./routes/products');
@@ -23,10 +24,6 @@ connectDB().catch(console.error);
 // Enable CORS
 app.use(cors());
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -35,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use('/', indexRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/branches', branchesRouter);
 app.use('/api/stores', storesRouter);
@@ -42,21 +40,27 @@ app.use('/api/products', productsRouter);
 app.use('/api/tickets', ticketsRouter);
 app.use('/api/turns', turnsRouter);
 app.use('/api/catalog', catalogRouter);
+// app.use('/api/store-registration', storeRegistrationRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+  res.status(404).json({
+    success: false,
+    message: 'Endpoint not found',
+    error: 'The requested resource does not exist'
+  });
 });
 
-// error handler
+// error handler for API
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  const isDevelopment = req.app.get('env') === 'development';
+  
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    error: isDevelopment ? err.stack : 'Something went wrong!'
+  });
 });
 
 module.exports = app;

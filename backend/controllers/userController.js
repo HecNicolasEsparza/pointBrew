@@ -66,12 +66,12 @@ const userController = {
   // Create new user
   createUser: async (req, res) => {
     try {
-      const { full_name, email, role_id } = req.body;
+      const { full_name, email, password, role_id } = req.body;
 
-      if (!full_name || !email || !role_id) {
+      if (!full_name || !email || !password || !role_id) {
         return res.status(400).json({
           success: false,
-          message: 'Missing required fields: full_name, email, role_id'
+          message: 'Missing required fields: full_name, email, password, role_id'
         });
       }
 
@@ -80,11 +80,12 @@ const userController = {
       const result = await pool.request()
         .input('fullName', sql.VarChar(100), full_name)
         .input('email', sql.VarChar(100), email)
+        .input('password', sql.VarChar(255), password)
         .input('roleId', sql.Int, role_id)
         .query(`
-          INSERT INTO [User] (full_name, email, role_id)
+          INSERT INTO [User] (full_name, email, password, role_id)
           OUTPUT INSERTED.user_id, INSERTED.full_name, INSERTED.email, INSERTED.role_id, INSERTED.created_at
-          VALUES (@fullName, @email, @roleId)
+          VALUES (@fullName, @email, @password, @roleId)
         `);
 
       res.status(201).json({
