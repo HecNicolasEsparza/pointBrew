@@ -6,7 +6,7 @@ import MockupLayout from '@/components/MockupLayout';
 import axios from 'axios';
 
 export default function RegisterStorePage() {
-  const { user, isAuthenticated, setUser, token } = useAuth();
+  const { user, isAuthenticated, setUser, token, refreshUser } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -59,12 +59,11 @@ export default function RegisterStorePage() {
 
       if (response.data.success) {
         setSuccess('¡Tienda registrada exitosamente! Ahora eres administrador.');
+        console.log('Store registered successfully, refreshing user...');
         
-        // Actualizar el usuario en el contexto para reflejar el nuevo rol
-        setUser(prev => prev ? ({
-          ...prev,
-          role_id: 1 // Admin role
-        }) : null);
+        // Actualizar el usuario desde el servidor para obtener la información más reciente
+        await refreshUser();
+        console.log('User refreshed, current user:', user);
 
         // Redirigir a la página principal después de 2 segundos
         setTimeout(() => {

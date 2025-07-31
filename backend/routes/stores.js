@@ -6,6 +6,9 @@ const { authenticateToken } = require('../middleware/auth');
 // GET /stores - Get all stores
 router.get('/', storeController.getAllStores);
 
+// GET /stores/my-stores - Get stores owned by current user
+router.get('/my-stores', authenticateToken, storeController.getMyStores);
+
 // GET /stores/:id - Get store by ID
 router.get('/:id', storeController.getStoreById);
 

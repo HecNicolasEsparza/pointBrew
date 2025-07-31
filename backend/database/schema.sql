@@ -44,6 +44,8 @@ CREATE TABLE Store (
     REFERENCES Branch(branch_id),
   name         VARCHAR(100)  NOT NULL,
   description  VARCHAR(50)   NULL,
+  owner_id     INT           NULL
+    REFERENCES [User](user_id),
   created_at   DATETIME      DEFAULT GETDATE(),
   updated_at   DATETIME      DEFAULT GETDATE()
 );

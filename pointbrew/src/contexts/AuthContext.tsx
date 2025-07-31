@@ -18,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   register: (full_name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
   isAuthenticated: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
@@ -154,6 +155,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      if (!token) {
+        console.log('No token available for refresh');
+        return;
+      }
+      
+      console.log('Refreshing user data...');
+      const response = await axios.get('/api/auth/profile');
+      if (response.data.success) {
+        console.log('User refreshed successfully:', response.data.data);
+        setUser(response.data.data);
+        Cookies.set('auth_user', JSON.stringify(response.data.data), { expires: 1 });
+      } else {
+        console.log('Failed to refresh user:', response.data);
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -172,6 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     register,
     logout,
+    refreshUser,
     loading,
     isAuthenticated,
     setUser

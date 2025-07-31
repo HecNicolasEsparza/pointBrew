@@ -1,12 +1,12 @@
 'use client';
 import MockupLayout from '@/components/MockupLayout';
 import RestaurantCarousel from '@/components/RestaurantCarousel';
-import RestaurantList from '@/components/RestaurantList';
+import StoreManagement from '@/components/StoreManagement';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   return (
     <MockupLayout title="Point Brew" showAuthButtons={true}>
       {/* Logo fijo en la parte superior izquierda */}
@@ -34,8 +34,8 @@ export default function Home() {
             {/* Carrusel de restaurante destacado */}
             <RestaurantCarousel />
             
-            {/* Lista de restaurantes desde el backend */}
-            <RestaurantList />
+            {/* Gestión y lista de todas las tiendas */}
+            <StoreManagement />
           </section>
         </div>
 
@@ -48,9 +48,15 @@ export default function Home() {
             <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
               Ofertas
             </div>
-            <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
-              Administrar Trabajo
-            </div>
+            {isAuthenticated && user?.role_name === 'Admin' ? (
+              <Link href="/manage-stores" className="nav-item">
+                Administrar Trabajo
+              </Link>
+            ) : (
+              <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
+                Administrar Trabajo
+              </div>
+            )}
             {isAuthenticated ? (
               <Link href="/register-store" className="nav-item">
                 Registrar una tienda
