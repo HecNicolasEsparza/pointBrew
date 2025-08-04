@@ -7,7 +7,7 @@ const storeController = {
       const pool = getPool();
       const result = await pool.request()
         .query(`
-          SELECT s.store_id, s.name, s.description, s.created_at, s.updated_at,
+          SELECT s.store_id, s.name, s.description, s.image_url, s.created_at, s.updated_at,
                  b.name as branch_name, b.address as branch_address
           FROM Store s
           INNER JOIN Branch b ON s.branch_id = b.branch_id
@@ -37,11 +37,11 @@ const storeController = {
       const result = await pool.request()
         .input('userId', sql.Int, userId)
         .query(`
-          SELECT s.store_id, s.name, s.description, s.created_at, s.updated_at,
+          SELECT s.store_id, s.name, s.description, s.image_url, s.created_at, s.updated_at,
                  b.name as branch_name, b.address as branch_address
           FROM Store s
           INNER JOIN Branch b ON s.branch_id = b.branch_id
-          WHERE s.owner_id = @userId OR s.owner_id IS NULL
+          WHERE s.owner_id = @userId
           ORDER BY s.created_at DESC
         `);
       
@@ -68,7 +68,7 @@ const storeController = {
       const result = await pool.request()
         .input('storeId', sql.Int, id)
         .query(`
-          SELECT s.store_id, s.name, s.description, s.created_at, s.updated_at,
+          SELECT s.store_id, s.name, s.description, s.image_url, s.created_at, s.updated_at,
                  b.name as branch_name, b.address as branch_address
           FROM Store s
           INNER JOIN Branch b ON s.branch_id = b.branch_id
@@ -99,7 +99,7 @@ const storeController = {
   // Create new store
   createStore: async (req, res) => {
     try {
-      const { branch_id, name, description } = req.body;
+      const { branch_id, name, description, image_url } = req.body;
 
       if (!branch_id || !name) {
         return res.status(400).json({
@@ -113,11 +113,12 @@ const storeController = {
       const result = await pool.request()
         .input('branchId', sql.Int, branch_id)
         .input('name', sql.VarChar(100), name)
-        .input('description', sql.VarChar(50), description || null)
+        .input('description', sql.VarChar(500), description || null)
+        .input('imageUrl', sql.VarChar(500), image_url || null)
         .query(`
-          INSERT INTO Store (branch_id, name, description)
+          INSERT INTO Store (branch_id, name, description, image_url)
           OUTPUT INSERTED.store_id, INSERTED.branch_id, INSERTED.name, INSERTED.description, INSERTED.created_at
-          VALUES (@branchId, @name, @description)
+          VALUES (@branchId, @name, @description, @imageUrl)
         `);
 
       res.status(201).json({
@@ -139,7 +140,7 @@ const storeController = {
   updateStore: async (req, res) => {
     try {
       const { id } = req.params;
-      const { branch_id, name, description } = req.body;
+      const { branch_id, name, description, image_url } = req.body;
 
       const pool = getPool();
       
@@ -147,12 +148,14 @@ const storeController = {
         .input('storeId', sql.Int, id)
         .input('branchId', sql.Int, branch_id)
         .input('name', sql.VarChar(100), name)
-        .input('description', sql.VarChar(50), description || null)
+        .input('description', sql.VarChar(500), description || null)
+        .input('imageUrl', sql.VarChar(500), image_url || null)
         .query(`
           UPDATE Store 
           SET branch_id = @branchId,
               name = @name, 
               description = @description, 
+              image_url = @imageUrl,
               updated_at = GETDATE()
           OUTPUT INSERTED.store_id, INSERTED.branch_id, INSERTED.name, INSERTED.description, INSERTED.updated_at
           WHERE store_id = @storeId
@@ -211,11 +214,103 @@ const storeController = {
     }
   },
 
+  // Update store - NUEVO ENDPOINT
+  updateUserStore: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, description, branch_name, branch_address, image_url } = req.body;
+      const userId = req.user.user_id;
+
+      if (!name || !branch_name || !branch_address) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nombre de tienda, sucursal y dirección son requeridos'
+        });
+      }
+
+      const pool = getPool();
+      const transaction = new sql.Transaction(pool);
+
+      try {
+        await transaction.begin();
+
+        // Verificar que la tienda pertenezca al usuario
+        const storeCheck = await transaction.request()
+          .input('storeId', sql.Int, id)
+          .input('userId', sql.Int, userId)
+          .query(`
+            SELECT s.store_id, s.branch_id 
+            FROM Store s 
+            WHERE s.store_id = @storeId AND s.owner_id = @userId
+          `);
+
+        if (storeCheck.recordset.length === 0) {
+          await transaction.rollback();
+          return res.status(404).json({
+            success: false,
+            message: 'Tienda no encontrada o no tienes permisos para editarla'
+          });
+        }
+
+        const branchId = storeCheck.recordset[0].branch_id;
+
+        // 1. Actualizar la sucursal
+        await transaction.request()
+          .input('branchId', sql.Int, branchId)
+          .input('branchName', sql.VarChar(100), branch_name)
+          .input('branchAddress', sql.VarChar(150), branch_address)
+          .query(`
+            UPDATE Branch 
+            SET name = @branchName, 
+                address = @branchAddress, 
+                updated_at = GETDATE()
+            WHERE branch_id = @branchId
+          `);
+
+        // 2. Actualizar la tienda
+        const storeResult = await transaction.request()
+          .input('storeId', sql.Int, id)
+          .input('name', sql.VarChar(100), name)
+          .input('description', sql.VarChar(500), description || null)
+          .input('imageUrl', sql.VarChar(500), image_url || null)
+          .query(`
+            UPDATE Store 
+            SET name = @name, 
+                description = @description,
+                image_url = @imageUrl,
+                updated_at = GETDATE()
+            OUTPUT INSERTED.store_id, INSERTED.name, INSERTED.description, INSERTED.image_url, INSERTED.updated_at
+            WHERE store_id = @storeId
+          `);
+
+        await transaction.commit();
+
+        res.json({
+          success: true,
+          message: 'Tienda actualizada exitosamente',
+          data: storeResult.recordset[0]
+        });
+
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+
+    } catch (error) {
+      console.error('Error actualizando tienda:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error actualizando la tienda',
+        error: error.message
+      });
+    }
+  },
+
   // Register new store and make user admin
   registerUserStore: async (req, res) => {
     try {
-      const { storeName, storeDescription, branchName, branchAddress } = req.body;
-      const userId = req.user.user_id; // Usar user_id en lugar de userId
+      const { storeName, storeDescription, branchName, branchAddress, imageUrl } = req.body;
+      const userId = req.user.user_id;
       
       console.log('Register store request:', { storeName, branchName, branchAddress, userId });
 
@@ -245,16 +340,17 @@ const storeController = {
 
         const branchId = branchResult.recordset[0].branch_id;
 
-        // 2. Crear la tienda (Store) con owner_id
+        // 2. Crear la tienda (Store) con owner_id e image_url
         const storeResult = await transaction.request()
           .input('branch_id', sql.Int, branchId)
           .input('name', sql.VarChar(100), storeName)
-          .input('description', sql.VarChar(50), storeDescription || null)
+          .input('description', sql.VarChar(500), storeDescription || null)
+          .input('imageUrl', sql.VarChar(500), imageUrl || null)
           .input('owner_id', sql.Int, userId)
           .query(`
-            INSERT INTO Store (branch_id, name, description, owner_id) 
+            INSERT INTO Store (branch_id, name, description, image_url, owner_id) 
             OUTPUT INSERTED.store_id
-            VALUES (@branch_id, @name, @description, @owner_id)
+            VALUES (@branch_id, @name, @description, @imageUrl, @owner_id)
           `);
 
         const storeId = storeResult.recordset[0].store_id;
@@ -263,7 +359,7 @@ const storeController = {
         console.log('Updating user role for userId:', userId);
         const updateResult = await transaction.request()
           .input('user_id', sql.Int, userId)
-          .input('role_id', sql.Int, 1) // 1 = Admin según el schema
+          .input('role_id', sql.Int, 1)
           .query(`
             UPDATE [User] 
             SET role_id = @role_id, updated_at = GETDATE()

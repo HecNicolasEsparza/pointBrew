@@ -12,6 +12,7 @@ interface Store {
   description: string;
   branch_name: string;
   branch_address: string;
+  branch_id?: number; // Add this field
   image_url?: string;
   created_at: string;
   updated_at: string;
@@ -22,6 +23,7 @@ interface StoreUpdateData {
   description: string;
   branch_name: string;
   branch_address: string;
+  branch_id?: number; // Add this field
   image_url?: string;
 }
 
@@ -39,6 +41,7 @@ export default function ManageStoresPage() {
     description: '',
     branch_name: '',
     branch_address: '',
+    branch_id: undefined, // Initialize as undefined
     image_url: ''
   });
   const [submitting, setSubmitting] = useState(false);
@@ -96,6 +99,7 @@ export default function ManageStoresPage() {
       description: store.description || '',
       branch_name: store.branch_name,
       branch_address: store.branch_address,
+      branch_id: store.branch_id || 1, // Default to 1 if not present
       image_url: store.image_url || ''
     });
     setShowConfigModal(true);
@@ -104,27 +108,53 @@ export default function ManageStoresPage() {
   };
 
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    console.log('Starting Cloudinary upload...');
+    console.log('File details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+    console.log('Cloudinary cloud name:', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
+    
+    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
+      throw new Error('Cloudinary cloud name not configured. Check NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME environment variable.');
+    }
+    
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', 'store_images');
     
+    console.log('FormData prepared, uploading to Cloudinary...');
+    
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
+      console.log('Uploading to:', cloudinaryUrl);
+      
+      const response = await fetch(cloudinaryUrl, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      console.log('Cloudinary response status:', response.status);
+      console.log('Cloudinary response ok:', response.ok);
       
       if (!response.ok) {
-        throw new Error('Failed to upload image');
+        const errorText = await response.text();
+        console.error('Cloudinary error response:', errorText);
+        throw new Error(`Cloudinary upload failed: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
+      console.log('Cloudinary upload successful:', data);
+      console.log('Image URL:', data.secure_url);
+      
+      if (!data.secure_url) {
+        throw new Error('No secure_url received from Cloudinary');
+      }
+      
       return data.secure_url;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error uploading to Cloudinary:', error);
       throw error;
     }
   };
@@ -132,6 +162,8 @@ export default function ManageStoresPage() {
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    console.log('Image upload started for file:', file.name);
 
     // Validar tipo de archivo
     if (!file.type.startsWith('image/')) {
@@ -149,15 +181,29 @@ export default function ManageStoresPage() {
       setUploadingImage(true);
       setError('');
       
+      console.log('Uploading image to Cloudinary...');
       const imageUrl = await uploadImageToCloudinary(file);
-      setStoreFormData(prev => ({
-        ...prev,
-        image_url: imageUrl
-      }));
+      console.log('Image uploaded successfully, URL:', imageUrl);
+      
+      setStoreFormData(prev => {
+        const updated = {
+          ...prev,
+          image_url: imageUrl
+        };
+        console.log('Updated form data with image URL:', updated);
+        return updated;
+      });
+      
+      setSuccess('Imagen subida exitosamente');
+      setTimeout(() => setSuccess(''), 2000);
       
     } catch (error) {
       console.error('Error uploading image:', error);
-      setError('Error al subir la imagen. Por favor intenta de nuevo.');
+      if (error instanceof Error) {
+        setError(`Error al subir la imagen: ${error.message}`);
+      } else {
+        setError('Error al subir la imagen. Por favor intenta de nuevo.');
+      }
     } finally {
       setUploadingImage(false);
     }
@@ -177,32 +223,115 @@ export default function ManageStoresPage() {
     e.preventDefault();
     if (!editingStore) return;
 
+    // Validate required fields
+    if (!storeFormData.name.trim() || !storeFormData.branch_name.trim() || !storeFormData.branch_address.trim()) {
+      setError('Por favor completa todos los campos requeridos');
+      return;
+    }
+
     try {
       setSubmitting(true);
       setError('');
       
-      // Simular actualización exitosa (reemplazar con llamada real a la API cuando esté lista)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Updating store:', editingStore.store_id);
+      console.log('Store data being sent:', storeFormData);
       
-      // Actualizar los datos locales de la tienda
-      setStores(prevStores => 
-        prevStores.map(store => 
-          store.store_id === editingStore.store_id 
-            ? { ...store, ...storeFormData, updated_at: new Date().toISOString() }
-            : store
-        )
-      );
-      
-      setSuccess('Configuración actualizada exitosamente');
-      setShowConfigModal(false);
-      setEditingStore(null);
-      
-      // Limpiar mensaje de éxito después de 3 segundos
-      setTimeout(() => setSuccess(''), 3000);
+      // Clean the data before sending - include branch_id
+      const cleanedData = {
+        name: storeFormData.name.trim(),
+        description: storeFormData.description?.trim() || '',
+        branch_name: storeFormData.branch_name.trim(),
+        branch_address: storeFormData.branch_address.trim(),
+        branch_id: storeFormData.branch_id || editingStore.branch_id || 1, // Ensure branch_id is always present
+        image_url: storeFormData.image_url || ''
+      };
+
+      console.log('Cleaned data to send to server:', cleanedData);
+      console.log('Image URL in cleaned data:', cleanedData.image_url);
+      console.log('Branch ID in cleaned data:', cleanedData.branch_id);
+
+      try {
+        console.log(`Trying PUT /api/stores/${editingStore.store_id}`);
+        const response = await axios.put(
+          `http://localhost:3001/api/stores/${editingStore.store_id}`,
+          cleanedData,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        console.log('Server response:', response.data);
+
+        if (response.data.success) {
+          // Server update successful
+          setStores(prevStores => 
+            prevStores.map(store => 
+              store.store_id === editingStore.store_id 
+                ? { ...store, ...storeFormData, updated_at: new Date().toISOString() }
+                : store
+            )
+          );
+          
+          setSuccess('Configuración actualizada exitosamente');
+          setShowConfigModal(false);
+          setEditingStore(null);
+          setTimeout(() => setSuccess(''), 3000);
+          return;
+        }
+      } catch (serverError: any) {
+        console.error('Server update failed:', serverError.response?.status, serverError.response?.data);
+        console.error('Full server error:', serverError);
+        
+        // Show specific error message from server
+        if (serverError.response?.data?.error) {
+          setError(`Error del servidor: ${serverError.response.data.error}`);
+          return;
+        }
+        
+        // If server fails, update locally immediately
+        setStores(prevStores => 
+          prevStores.map(store => 
+            store.store_id === editingStore.store_id 
+              ? { ...store, ...storeFormData, updated_at: new Date().toISOString() }
+              : store
+          )
+        );
+
+        if (serverError.response?.status === 500) {
+          setSuccess('Actualizado localmente - Error del servidor (los cambios son temporales)');
+          setShowConfigModal(false);
+          setEditingStore(null);
+          setTimeout(() => setSuccess(''), 4000);
+          return;
+        } else {
+          throw serverError;
+        }
+      }
 
     } catch (error: any) {
       console.error('Error updating store:', error);
-      setError('Error al actualizar la tienda');
+      
+      if (error.response) {
+        const status = error.response.status;
+        const errorData = error.response.data;
+        
+        if (status === 401) {
+          setError('No autorizado. Por favor inicia sesión nuevamente.');
+        } else if (status === 403) {
+          setError('No tienes permisos para actualizar esta tienda.');
+        } else if (status === 404) {
+          setError('Tienda no encontrada en el servidor.');
+        } else {
+          setError(errorData?.message || errorData?.error || `Error del servidor (${status})`);
+        }
+      } else if (error.request) {
+        setError('Error de conexión con el servidor.');
+      } else {
+        setError('Error inesperado: ' + error.message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -219,17 +348,6 @@ export default function ManageStoresPage() {
     // Si la tienda tiene una imagen personalizada, usarla
     if (store.image_url) {
       return store.image_url;
-    }
-    
-    // Si no, usar imagen predeterminada basada en el nombre
-    if (store.name.toLowerCase().includes('kfc') || store.name.toLowerCase().includes('pollo')) {
-      return "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (store.name.toLowerCase().includes('hamburguesa') || store.name.toLowerCase().includes('burger')) {
-      return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (store.name.toLowerCase().includes('pizza')) {
-      return "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (store.name.toLowerCase().includes('café') || store.name.toLowerCase().includes('coffee')) {
-      return "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
     } else {
       return "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
     }
@@ -261,6 +379,100 @@ export default function ManageStoresPage() {
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
 
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Cargando tus tiendas...</p>
+          </div>
+        ) : (
+          <div className="manage-stores-content">
+            {stores.length === 0 ? (
+              <div className="no-stores">
+                <div className="no-stores-icon">🏪</div>
+                <h3>No tienes tiendas registradas</h3>
+                <p>Registra tu primera tienda para comenzar a administrar tu negocio.</p>
+                <button 
+                  onClick={() => router.push('/register-store')}
+                  className="register-first-store-btn"
+                >
+                  Registrar Primera Tienda
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="stores-summary">
+                  <div className="summary-card">
+                    <h3>{stores.length}</h3>
+                    <p>Tienda{stores.length !== 1 ? 's' : ''} Registrada{stores.length !== 1 ? 's' : ''}</p>
+                  </div>
+                  <div className="summary-card">
+                    <h3>{user?.full_name}</h3>
+                    <p>Administrador</p>
+                  </div>
+                </div>
+
+                <div className="stores-grid">
+                  {stores.map((store) => (
+                    <div key={store.store_id} className="store-management-card">
+                      <div className="store-image-container">
+                        <img 
+                          src={getStoreImage(store)} 
+                          alt={store.name}
+                          className="store-image"
+                        />
+                        <div className="store-status-badge">
+                          <span className="status-active">Activa</span>
+                        </div>
+                      </div>
+                      
+                      <div className="store-info">
+                        <h3 className="store-name">{store.name}</h3>
+                        <p className="store-description">{store.description || 'Sin descripción'}</p>
+                        <div className="store-location">
+                          <strong>{store.branch_name}</strong>
+                          <span>{store.branch_address}</span>
+                        </div>
+                        <div className="store-dates">
+                          <small>Registrada: {new Date(store.created_at).toLocaleDateString('es-ES')}</small>
+                          {store.updated_at !== store.created_at && (
+                            <small>Actualizada: {new Date(store.updated_at).toLocaleDateString('es-ES')}</small>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="store-management-actions">
+                        <button 
+                          onClick={() => handleViewStore(store.store_id)}
+                          className="view-store-btn"
+                          title="Ver tienda pública"
+                        >
+                          👁️ Ver Tienda
+                        </button>
+                        
+                        <button 
+                          onClick={() => handleEditMenu(store.store_id)}
+                          className="edit-menu-btn"
+                          title="Administrar menú de productos"
+                        >
+                          📋 Editar Menú
+                        </button>
+                        
+                        <button 
+                          onClick={() => handleEditStore(store)}
+                          className="edit-store-btn"
+                          title="Configurar información de la tienda"
+                        >
+                          ⚙️ Configurar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Configuration Modal */}
         {showConfigModal && editingStore && (
           <div className="modal-overlay">
@@ -281,6 +493,15 @@ export default function ManageStoresPage() {
                 {/* Image Upload Section */}
                 <div className="image-upload-container">
                   <label className="image-upload-label">Imagen de la Tienda</label>
+                  
+                  {/* Debug info */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div style={{ marginBottom: '10px', padding: '8px', backgroundColor: '#f0f0f0', fontSize: '12px' }}>
+                      <strong>Debug info:</strong><br />
+                      Cloudinary configured: {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? 'Yes' : 'No'}<br />
+                      Current image URL: {storeFormData.image_url || 'None'}
+                    </div>
+                  )}
                   
                   <div className="image-upload-area">
                     {storeFormData.image_url ? (
@@ -433,100 +654,6 @@ export default function ManageStoresPage() {
                 </div>
               </form>
             </div>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Cargando tus tiendas...</p>
-          </div>
-        ) : (
-          <div className="manage-stores-content">
-            {stores.length === 0 ? (
-              <div className="no-stores">
-                <div className="no-stores-icon">🏪</div>
-                <h3>No tienes tiendas registradas</h3>
-                <p>Registra tu primera tienda para comenzar a administrar tu negocio.</p>
-                <button 
-                  onClick={() => router.push('/register-store')}
-                  className="register-first-store-btn"
-                >
-                  Registrar Primera Tienda
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="stores-summary">
-                  <div className="summary-card">
-                    <h3>{stores.length}</h3>
-                    <p>Tienda{stores.length !== 1 ? 's' : ''} Registrada{stores.length !== 1 ? 's' : ''}</p>
-                  </div>
-                  <div className="summary-card">
-                    <h3>{user?.full_name}</h3>
-                    <p>Administrador</p>
-                  </div>
-                </div>
-
-                <div className="stores-grid">
-                  {stores.map((store) => (
-                    <div key={store.store_id} className="store-management-card">
-                      <div className="store-image-container">
-                        <img 
-                          src={getStoreImage(store)} 
-                          alt={store.name}
-                          className="store-image"
-                        />
-                        <div className="store-status-badge">
-                          <span className="status-active">Activa</span>
-                        </div>
-                      </div>
-                      
-                      <div className="store-info">
-                        <h3 className="store-name">{store.name}</h3>
-                        <p className="store-description">{store.description || 'Sin descripción'}</p>
-                        <div className="store-location">
-                          <strong>{store.branch_name}</strong>
-                          <span>{store.branch_address}</span>
-                        </div>
-                        <div className="store-dates">
-                          <small>Registrada: {new Date(store.created_at).toLocaleDateString('es-ES')}</small>
-                          {store.updated_at !== store.created_at && (
-                            <small>Actualizada: {new Date(store.updated_at).toLocaleDateString('es-ES')}</small>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="store-management-actions">
-                        <button 
-                          onClick={() => handleViewStore(store.store_id)}
-                          className="view-store-btn"
-                          title="Ver tienda pública"
-                        >
-                          👁️ Ver Tienda
-                        </button>
-                        
-                        <button 
-                          onClick={() => handleEditMenu(store.store_id)}
-                          className="edit-menu-btn"
-                          title="Administrar menú de productos"
-                        >
-                          📋 Editar Menú
-                        </button>
-                        
-                        <button 
-                          onClick={() => handleEditStore(store)}
-                          className="edit-store-btn"
-                          title="Configurar información de la tienda"
-                        >
-                          ⚙️ Configurar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
           </div>
         )}
       </div>
