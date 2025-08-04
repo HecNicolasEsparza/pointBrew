@@ -12,6 +12,7 @@ interface Product {
   description: string;
   price: number;
   category: string;
+  category_id?: number; // Agregar este campo opcional
   is_available: boolean;
 }
 
@@ -60,16 +61,56 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
       });
       
       if (response.data.success) {
-        setProducts(response.data.data);
+        // Mapear los datos del backend al formato del frontend
+        const mappedProducts = response.data.data.map((product: any) => ({
+          product_id: product.product_id,
+          name: product.name,
+          description: product.description || '',
+          price: product.price,
+          category: product.category_name || 'Otro', // Usar category_name del backend
+          category_id: product.category_id,
+          is_available: product.available // Mapear available a is_available
+        }));
+        setProducts(mappedProducts);
       } else {
         setError('Error al cargar los productos');
       }
     } catch (error) {
       console.error('Error fetching products:', error);
       setError('Error al conectar con el servidor');
-      setProducts([]); // Set empty array for new stores
+      setProducts([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateProduct = async (product: Product) => {
+    try {
+      // Convertir los datos al formato que espera el backend
+      const productData = {
+        store_id: parseInt(storeId),
+        category_id: getCategoryId(product.category), // Función para obtener el ID
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        available: product.is_available // Cambiar is_available a available
+      };
+
+      const response = await axios.put(`http://localhost:3001/api/products/${product.product_id}`, productData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.success) {
+        setSuccess('Producto actualizado exitosamente');
+        setEditingProduct(null);
+        fetchProducts();
+      }
+    } catch (error: any) {
+      console.error('Error updating product:', error);
+      setError(error.response?.data?.message || 'Error al actualizar producto');
     }
   };
 
@@ -77,9 +118,12 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
     e.preventDefault();
     try {
       const productData = {
-        ...newProduct,
+        store_id: parseInt(storeId),
+        category_id: getCategoryId(newProduct.category), // Usar category_id
+        name: newProduct.name,
+        description: newProduct.description,
         price: parseFloat(newProduct.price),
-        store_id: parseInt(storeId)
+        available: newProduct.is_available // Cambiar is_available a available
       };
 
       const response = await axios.post('http://localhost:3001/api/products', productData, {
@@ -101,24 +145,16 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
     }
   };
 
-  const handleUpdateProduct = async (product: Product) => {
-    try {
-      const response = await axios.put(`http://localhost:3001/api/products/${product.product_id}`, product, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.data.success) {
-        setSuccess('Producto actualizado exitosamente');
-        setEditingProduct(null);
-        fetchProducts();
-      }
-    } catch (error: any) {
-      console.error('Error updating product:', error);
-      setError(error.response?.data?.message || 'Error al actualizar producto');
-    }
+  // Función auxiliar para convertir nombre de categoría a ID
+  const getCategoryId = (categoryName: string): number | null => {
+    const categoryMap: { [key: string]: number } = {
+      'Bebidas': 1,
+      'Comida': 2,
+      'Postres': 3,
+      'Aperitivos': 4,
+      'Otro': 5
+    };
+    return categoryMap[categoryName] || null;
   };
 
   const handleDeleteProduct = async (productId: number) => {
@@ -186,16 +222,6 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
                     onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
                     required
                     maxLength={100}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="description">Descripción</label>
-                  <textarea
-                    id="description"
-                    value={newProduct.description}
-                    onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                    maxLength={255}
                   />
                 </div>
 
@@ -302,7 +328,6 @@ function ProductDisplay({
     <>
       <div className="product-info">
         <h3 className="product-name">{product.name}</h3>
-        <p className="product-description">{product.description || 'Sin descripción'}</p>
         <div className="product-details">
           <span className="product-price">${product.price.toFixed(2)}</span>
           <span className="product-category">{product.category}</span>
@@ -342,15 +367,6 @@ function ProductEditForm({
           onChange={(e) => onChange({...product, name: e.target.value})}
           required
           maxLength={100}
-        />
-      </div>
-      
-      <div className="form-group">
-        <textarea
-          value={product.description}
-          onChange={(e) => onChange({...product, description: e.target.value})}
-          placeholder="Descripción"
-          maxLength={255}
         />
       </div>
       
