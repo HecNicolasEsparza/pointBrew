@@ -1557,7 +1557,6 @@ body {
 .no-stores {
   text-align: center;
   padding: 3rem;
-  color: #666;
 }
 
 .register-store-btn {
@@ -2211,35 +2210,155 @@ body {
   background-color: #1a0f08;
 }
 
+/* Store Configuration Modal Styles */
+.store-config-modal {
+  max-width: 600px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.close-modal-btn:hover {
+  color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.store-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.store-config-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.store-config-form .form-group label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.store-config-form .form-group input,
+.store-config-form .form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.store-config-form .form-group input:focus,
+.store-config-form .form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.store-config-form .form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.store-config-form .form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.store-config-form .cancel-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.store-config-form .cancel-btn:hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.store-config-form .save-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.store-config-form .save-btn:hover {
+  background-color: #2563eb;
+}
+
+.store-config-form .save-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Success message styles */
+.success-message {
+  background-color: #dcfce7;
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* Responsive design for mobile */
 @media (max-width: 768px) {
-  .store-hero {
-    height: 250px;
+  .store-config-modal {
+    width: 95vw;
+    margin: 1rem;
   }
   
-  .store-title {
-    font-size: 2rem;
-  }
-  
-  .store-hero-content {
-    padding: 1.5rem;
-  }
-  
-  .store-menu {
-    padding: 1rem;
-  }
-  
-  .menu-item {
+  .store-config-form .form-actions {
     flex-direction: column;
-    align-items: flex-start;
   }
   
-  .menu-item-info {
-    margin-right: 0;
-    margin-bottom: 0.75rem;
-  }
-  
-  .menu-item-price {
-    align-self: flex-end;
+  .store-config-form .cancel-btn,
+  .store-config-form .save-btn {
+    width: 100%;
   }
 }
 
@@ -2266,10 +2385,10 @@ body {
 }
 
 .add-store-btn {
+  padding: 0.75rem 1.5rem;
   background-color: var(--cart-btn);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
   border-radius: 8px;
   cursor: pointer;
   font-size: 1rem;
@@ -2282,49 +2401,7 @@ body {
 }
 
 .manage-stores-content {
-  margin-top: 2rem;
-}
-
-.no-stores {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #666;
-}
-
-.no-stores-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-.no-stores h3 {
-  color: var(--navbar-bg);
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.no-stores p {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.register-first-store-btn {
-  background-color: var(--cart-btn);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.register-first-store-btn:hover {
-  background-color: #3bb028;
-  transform: translateY(-2px);
+  margin-top: 1rem;
 }
 
 .stores-summary {
@@ -2335,24 +2412,65 @@ body {
 }
 
 .summary-card {
-  background: linear-gradient(135deg, var(--navbar-bg), #4a2f1a);
-  color: white;
-  padding: 2rem;
+  background: white;
+  padding: 1.5rem;
   border-radius: 12px;
-  text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
 .summary-card h3 {
-  font-size: 2.5rem;
+  font-size: 2rem;
+  color: var(--cart-btn);
   margin: 0 0 0.5rem 0;
   font-weight: bold;
 }
 
 .summary-card p {
+  color: #666;
   margin: 0;
   font-size: 1rem;
-  opacity: 0.9;
+}
+
+.no-stores {
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.no-stores-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.no-stores h3 {
+  color: var(--navbar-bg);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.no-stores p {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.register-first-store-btn {
+  background-color: var(--cart-btn);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.register-first-store-btn:hover {
+  background-color: #3bb028;
 }
 
 .store-management-card {
@@ -2361,30 +2479,11 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
 }
 
 .store-management-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.store-image-container {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-.store-management-card .store-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.store-management-card:hover .store-image {
-  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .store-status-badge {
@@ -2398,60 +2497,15 @@ body {
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
-}
-
-.store-management-card .store-info {
-  padding: 1.5rem;
-}
-
-.store-management-card .store-name {
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: var(--navbar-bg);
-  margin: 0 0 0.5rem 0;
-}
-
-.store-management-card .store-description {
-  color: #666;
-  font-size: 0.95rem;
-  margin: 0 0 1rem 0;
-  line-height: 1.4;
-}
-
-.store-management-card .store-location {
-  margin-bottom: 1rem;
-}
-
-.store-management-card .store-location strong {
-  display: block;
-  color: var(--navbar-bg);
-  font-size: 1rem;
-  margin-bottom: 0.25rem;
-}
-
-.store-management-card .store-location span {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.store-dates {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.store-dates small {
-  color: #999;
-  font-size: 0.8rem;
 }
 
 .store-management-actions {
   padding: 1rem 1.5rem;
   background-color: #f8f9fa;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
 }
 
@@ -2465,19 +2519,16 @@ body {
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  text-align: center;
 }
 
 .view-store-btn {
-  background-color: #007bff;
+  background-color: var(--navbar-bg);
   color: white;
 }
 
 .view-store-btn:hover {
-  background-color: #0056b3;
+  background-color: #1a0f08;
 }
 
 .edit-menu-btn {
@@ -2490,14 +2541,15 @@ body {
 }
 
 .edit-store-btn {
-  background-color: #6c757d;
+  background-color: #007bff;
   color: white;
 }
 
 .edit-store-btn:hover {
-  background-color: #5a6268;
+  background-color: #0056b3;
 }
 
+/* Responsive for manage stores */
 @media (max-width: 768px) {
   .manage-stores-container {
     padding: 1rem;
@@ -2513,23 +2565,16 @@ body {
     font-size: 1.5rem;
   }
   
-  .stores-summary {
-    grid-template-columns: 1fr;
-  }
-  
-  .stores-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .store-management-actions {
     grid-template-columns: 1fr;
   }
   
-  .no-stores {
-    padding: 2rem 1rem;
+  .store-config-form .form-actions {
+    flex-direction: column;
   }
   
-  .no-stores-icon {
-    font-size: 3rem;
+  .store-config-form .cancel-btn,
+  .store-config-form .save-btn {
+    width: 100%;
   }
 }
