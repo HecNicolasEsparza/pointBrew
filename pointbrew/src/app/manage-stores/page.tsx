@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
@@ -12,6 +12,7 @@ interface Store {
   description: string;
   branch_name: string;
   branch_address: string;
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +22,7 @@ interface StoreUpdateData {
   description: string;
   branch_name: string;
   branch_address: string;
+  image_url?: string;
 }
 
 export default function ManageStoresPage() {
@@ -36,9 +38,12 @@ export default function ManageStoresPage() {
     name: '',
     description: '',
     branch_name: '',
-    branch_address: ''
+    branch_address: '',
+    image_url: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Redirigir si no está autenticado o no es admin
   useEffect(() => {
@@ -90,11 +95,82 @@ export default function ManageStoresPage() {
       name: store.name,
       description: store.description || '',
       branch_name: store.branch_name,
-      branch_address: store.branch_address
+      branch_address: store.branch_address,
+      image_url: store.image_url || ''
     });
     setShowConfigModal(true);
     setError('');
     setSuccess('');
+  };
+
+  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'store_images');
+    
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+      
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      setError('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+
+    // Validar tamaño (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen debe ser menor a 5MB');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setError('');
+      
+      const imageUrl = await uploadImageToCloudinary(file);
+      setStoreFormData(prev => ({
+        ...prev,
+        image_url: imageUrl
+      }));
+      
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setError('Error al subir la imagen. Por favor intenta de nuevo.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setStoreFormData(prev => ({
+      ...prev,
+      image_url: ''
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleUpdateStore = async (e: React.FormEvent) => {
@@ -105,33 +181,10 @@ export default function ManageStoresPage() {
       setSubmitting(true);
       setError('');
       
-      // For now, let's simulate a successful update since the backend endpoint might not exist
-      // In a real scenario, you would uncomment the axios call below when the backend is ready
+      // Simular actualización exitosa (reemplazar con llamada real a la API cuando esté lista)
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      /*
-      const response = await axios.put(
-        `http://localhost:3001/api/stores/${editingStore.store_id}`,
-        storeFormData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (response.data.success) {
-        setSuccess('Tienda actualizada exitosamente');
-        setShowConfigModal(false);
-        setEditingStore(null);
-        fetchUserStores(); // Refresh the stores list
-      }
-      */
-
-      // Simulate successful update for now
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-      
-      // Update the local store data
+      // Actualizar los datos locales de la tienda
       setStores(prevStores => 
         prevStores.map(store => 
           store.store_id === editingStore.store_id 
@@ -144,12 +197,12 @@ export default function ManageStoresPage() {
       setShowConfigModal(false);
       setEditingStore(null);
       
-      // Clear success message after 3 seconds
+      // Limpiar mensaje de éxito después de 3 segundos
       setTimeout(() => setSuccess(''), 3000);
 
     } catch (error: any) {
       console.error('Error updating store:', error);
-      setError(error.response?.data?.message || 'Error al actualizar la tienda. El endpoint del servidor aún no está disponible.');
+      setError('Error al actualizar la tienda');
     } finally {
       setSubmitting(false);
     }
@@ -162,14 +215,20 @@ export default function ManageStoresPage() {
     setSuccess('');
   };
 
-  const getStoreImage = (storeName: string): string => {
-    if (storeName.toLowerCase().includes('kfc') || storeName.toLowerCase().includes('pollo')) {
+  const getStoreImage = (store: Store): string => {
+    // Si la tienda tiene una imagen personalizada, usarla
+    if (store.image_url) {
+      return store.image_url;
+    }
+    
+    // Si no, usar imagen predeterminada basada en el nombre
+    if (store.name.toLowerCase().includes('kfc') || store.name.toLowerCase().includes('pollo')) {
       return "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (storeName.toLowerCase().includes('hamburguesa') || storeName.toLowerCase().includes('burger')) {
+    } else if (store.name.toLowerCase().includes('hamburguesa') || store.name.toLowerCase().includes('burger')) {
       return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (storeName.toLowerCase().includes('pizza')) {
+    } else if (store.name.toLowerCase().includes('pizza')) {
       return "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (storeName.toLowerCase().includes('café') || storeName.toLowerCase().includes('coffee')) {
+    } else if (store.name.toLowerCase().includes('café') || store.name.toLowerCase().includes('coffee')) {
       return "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
     } else {
       return "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
@@ -219,6 +278,73 @@ export default function ManageStoresPage() {
               </div>
               
               <form onSubmit={handleUpdateStore} className="store-config-form">
+                {/* Image Upload Section */}
+                <div className="image-upload-container">
+                  <label className="image-upload-label">Imagen de la Tienda</label>
+                  
+                  <div className="image-upload-area">
+                    {storeFormData.image_url ? (
+                      <div className="image-preview">
+                        <img 
+                          src={storeFormData.image_url} 
+                          alt="Preview" 
+                          className="preview-image" 
+                        />
+                        <div className="image-overlay">
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="image-action-btn"
+                            disabled={uploadingImage}
+                          >
+                            Cambiar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="image-action-btn"
+                            disabled={uploadingImage}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="upload-placeholder">
+                        <div className="upload-icon">📷</div>
+                        <h4>Subir imagen de la tienda</h4>
+                        <p>Selecciona una imagen para tu tienda (máx. 5MB)</p>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="upload-btn"
+                          disabled={uploadingImage}
+                        >
+                          {uploadingImage ? 'Subiendo...' : 'Seleccionar Imagen'}
+                        </button>
+                      </div>
+                    )}
+                    
+                    {uploadingImage && (
+                      <div className="uploading-overlay">
+                        <div className="upload-progress">
+                          <div className="upload-spinner"></div>
+                          <span className="upload-text">Subiendo imagen...</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="upload-file-input"
+                    disabled={uploadingImage || submitting}
+                  />
+                </div>
+
                 <div className="form-group">
                   <label htmlFor="store-name">Nombre de la Tienda *</label>
                   <input
@@ -293,14 +419,14 @@ export default function ManageStoresPage() {
                     type="button" 
                     onClick={handleCloseModal}
                     className="cancel-btn"
-                    disabled={submitting}
+                    disabled={submitting || uploadingImage}
                   >
                     Cancelar
                   </button>
                   <button 
                     type="submit"
                     className="save-btn"
-                    disabled={submitting}
+                    disabled={submitting || uploadingImage}
                   >
                     {submitting ? 'Guardando...' : 'Guardar Cambios'}
                   </button>
@@ -347,7 +473,7 @@ export default function ManageStoresPage() {
                     <div key={store.store_id} className="store-management-card">
                       <div className="store-image-container">
                         <img 
-                          src={getStoreImage(store.name)} 
+                          src={getStoreImage(store)} 
                           alt={store.name}
                           className="store-image"
                         />
