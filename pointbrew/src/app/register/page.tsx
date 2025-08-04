@@ -19,7 +19,7 @@ export default function Register() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/menu');
+      router.push('/');
     }
   }, [isAuthenticated, router]);
 
