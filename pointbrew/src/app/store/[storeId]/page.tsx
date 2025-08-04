@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import axios from 'axios';
@@ -22,7 +22,11 @@ interface Product {
   is_available: boolean;
 }
 
-export default function StorePage({ params }: { params: { storeId: string } }) {
+export default function StorePage({ params }: { params: Promise<{ storeId: string }> }) {
+  // Usar React.use() para obtener los parámetros
+  const resolvedParams = use(params);
+  const storeId = resolvedParams.storeId;
+  
   const router = useRouter();
   const [store, setStore] = useState<Store | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,13 +42,13 @@ export default function StorePage({ params }: { params: { storeId: string } }) {
       setLoading(true);
       
       // Fetch store info
-      const storeResponse = await axios.get(`http://localhost:3001/api/stores/${params.storeId}`);
+      const storeResponse = await axios.get(`http://localhost:3001/api/stores/${storeId}`);
       if (storeResponse.data.success) {
         setStore(storeResponse.data.data);
       }
 
       // Fetch products
-      const productsResponse = await axios.get(`http://localhost:3001/api/products/store/${params.storeId}`);
+      const productsResponse = await axios.get(`http://localhost:3001/api/products/store/${storeId}`);
       if (productsResponse.data.success) {
         setProducts(productsResponse.data.data.filter((p: Product) => p.is_available));
       }

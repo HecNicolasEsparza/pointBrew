@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
@@ -15,7 +15,11 @@ interface Product {
   is_available: boolean;
 }
 
-export default function MenuEditPage({ params }: { params: { storeId: string } }) {
+export default function MenuEditPage({ params }: { params: Promise<{ storeId: string }> }) {
+  // Usar React.use() para obtener los parámetros
+  const resolvedParams = use(params);
+  const storeId = resolvedParams.storeId;
+  
   const { user, isAuthenticated, token } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,7 +53,7 @@ export default function MenuEditPage({ params }: { params: { storeId: string } }
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:3001/api/products/store/${params.storeId}`, {
+      const response = await axios.get(`http://localhost:3001/api/products/store/${storeId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -75,7 +79,7 @@ export default function MenuEditPage({ params }: { params: { storeId: string } }
       const productData = {
         ...newProduct,
         price: parseFloat(newProduct.price),
-        store_id: parseInt(params.storeId)
+        store_id: parseInt(storeId)
       };
 
       const response = await axios.post('http://localhost:3001/api/products', productData, {
@@ -329,13 +333,8 @@ function ProductEditForm({
   onCancel: () => void; 
   onChange: (product: Product) => void; 
 }) {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(product);
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="edit-form">
+    <form className="edit-form" onSubmit={(e) => { e.preventDefault(); onSave(product); }}>
       <div className="form-group">
         <input
           type="text"
@@ -343,19 +342,18 @@ function ProductEditForm({
           onChange={(e) => onChange({...product, name: e.target.value})}
           required
           maxLength={100}
-          placeholder="Nombre del producto"
         />
       </div>
-
+      
       <div className="form-group">
         <textarea
           value={product.description}
           onChange={(e) => onChange({...product, description: e.target.value})}
-          maxLength={255}
           placeholder="Descripción"
+          maxLength={255}
         />
       </div>
-
+      
       <div className="form-row">
         <input
           type="number"
@@ -364,7 +362,6 @@ function ProductEditForm({
           value={product.price}
           onChange={(e) => onChange({...product, price: parseFloat(e.target.value)})}
           required
-          placeholder="Precio"
         />
         <select
           value={product.category}
@@ -376,25 +373,19 @@ function ProductEditForm({
           ))}
         </select>
       </div>
-
-      <div className="form-group">
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={product.is_available}
-            onChange={(e) => onChange({...product, is_available: e.target.checked})}
-          />
-          Disponible
-        </label>
-      </div>
-
+      
+      <label className="checkbox-label">
+        <input
+          type="checkbox"
+          checked={product.is_available}
+          onChange={(e) => onChange({...product, is_available: e.target.checked})}
+        />
+        Disponible
+      </label>
+      
       <div className="form-actions">
-        <button type="button" onClick={onCancel} className="cancel-btn">
-          Cancelar
-        </button>
-        <button type="submit" className="save-btn">
-          Guardar
-        </button>
+        <button type="button" onClick={onCancel} className="cancel-btn">Cancelar</button>
+        <button type="submit" className="save-btn">Guardar</button>
       </div>
     </form>
   );
