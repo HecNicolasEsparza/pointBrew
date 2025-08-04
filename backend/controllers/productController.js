@@ -86,7 +86,7 @@ const productController = {
                  c.name as category_name, c.category_id
           FROM Product p
           LEFT JOIN Category c ON p.category_id = c.category_id
-          WHERE p.store_id = @storeId AND p.available = 1
+          WHERE p.store_id = @storeId
           ORDER BY p.name
         `);
 
@@ -118,9 +118,23 @@ const productController = {
 
       const pool = getPool();
       
+      // First, let's verify the category exists if provided
+      if (category_id) {
+        const categoryCheck = await pool.request()
+          .input('categoryId', sql.Int, category_id)
+          .query('SELECT category_id FROM Category WHERE category_id = @categoryId');
+        
+        if (categoryCheck.recordset.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Category with ID ${category_id} does not exist`
+          });
+        }
+      }
+      
       const result = await pool.request()
         .input('storeId', sql.Int, store_id)
-        .input('categoryId', sql.Int, category_id || null)
+        .input('categoryId', category_id ? sql.Int : sql.VarChar, category_id || null)
         .input('name', sql.VarChar(100), name)
         .input('price', sql.Decimal(10, 2), price)
         .input('available', sql.Bit, available)

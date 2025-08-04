@@ -126,3 +126,11 @@ INSERT INTO Role (role_name) VALUES ('Admin'), ('Customer'), ('Employee');
 INSERT INTO PaymentMethod (method_name) VALUES ('Cash'), ('Credit Card'), ('Debit Card'), ('Mobile Payment');
 INSERT INTO PaymentStatus (status_name) VALUES ('Pending'), ('Completed'), ('Failed'), ('Refunded');
 INSERT INTO TurnStatus (status_name) VALUES ('Waiting'), ('In Progress'), ('Ready'), ('Completed'), ('Cancelled');
+
+-- Insert default categories
+INSERT INTO Category (name) VALUES 
+('Bebidas'),
+('Comida'),
+('Postres'),
+('Aperitivos'),
+('Otro');

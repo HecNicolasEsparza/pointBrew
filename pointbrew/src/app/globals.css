@@ -1985,8 +1985,9 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
   cursor: pointer;
+  font-weight: 500;
+  color: #8b6f47;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -2000,6 +2001,16 @@ body {
   margin-top: 1.5rem;
 }
 
+.status-inactive {
+  background: #dc3545;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Responsive design for mobile */
 @media (max-width: 768px) {
   .menu-edit-container {
     padding: 1rem;

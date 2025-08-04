@@ -3,7 +3,6 @@ import MockupLayout from '@/components/MockupLayout';
 import RestaurantCarousel from '@/components/RestaurantCarousel';
 import StoreManagement from '@/components/StoreManagement';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface Store {
@@ -19,7 +18,6 @@ interface Store {
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
-  const router = useRouter();
 
   const getStoreImage = (store: Store): string => {
     // If the store has a custom image, use it
