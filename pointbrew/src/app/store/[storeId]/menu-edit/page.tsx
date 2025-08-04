@@ -32,10 +32,10 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
 
   const [newProduct, setNewProduct] = useState({
     name: '',
-    description: '',
+    description: '', // Puedes quitar este campo si no lo usas
     price: '',
     category: '',
-    is_available: true
+    is_available: true // Esto debería ser true por defecto
   });
 
   // Redirigir si no está autenticado o no es admin
@@ -119,11 +119,11 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
     try {
       const productData = {
         store_id: parseInt(storeId),
-        category_id: getCategoryId(newProduct.category), // Usar category_id
+        category_id: getCategoryId(newProduct.category),
         name: newProduct.name,
-        description: newProduct.description,
+        // description: newProduct.description, // Quita esta línea
         price: parseFloat(newProduct.price),
-        available: newProduct.is_available // Cambiar is_available a available
+        available: newProduct.is_available
       };
 
       const response = await axios.post('http://localhost:3001/api/products', productData, {

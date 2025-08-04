@@ -50,7 +50,20 @@ export default function StorePage({ params }: { params: Promise<{ storeId: strin
       // Fetch products
       const productsResponse = await axios.get(`http://localhost:3001/api/products/store/${storeId}`);
       if (productsResponse.data.success) {
-        setProducts(productsResponse.data.data.filter((p: Product) => p.is_available));
+        // Mapear los productos igual que en menu-edit
+        const mappedProducts = productsResponse.data.data.map((product: any) => ({
+          product_id: product.product_id,
+          name: product.name,
+          description: product.description || '',
+          price: product.price,
+          category: product.category_name || 'Otro',
+          category_id: product.category_id,
+          is_available: product.available // Mapear available a is_available
+        }));
+        
+        // Mostrar solo productos disponibles, pero primero verifica que el mapeo sea correcto
+        console.log('Productos mapeados:', mappedProducts); // Para debug
+        setProducts(mappedProducts.filter((p: any) => p.is_available));
       }
     } catch (error) {
       console.error('Error fetching store data:', error);
