@@ -157,6 +157,24 @@ INSERT INTO PaymentMethod (method_name) VALUES ('Cash'), ('Credit Card'), ('Debi
 INSERT INTO PaymentStatus (status_name) VALUES ('Pending'), ('Completed'), ('Failed'), ('Refunded');
 INSERT INTO TurnStatus (status_name) VALUES ('Waiting'), ('In Progress'), ('Ready'), ('Completed'), ('Cancelled');
 
+-- Tabla para almacenar métodos de pago de los usuarios
+CREATE TABLE UserPaymentMethod (
+  user_payment_id    INT           PRIMARY KEY IDENTITY,
+  user_id            INT           NOT NULL
+    REFERENCES [User](user_id),
+  method_id          INT           NOT NULL
+    REFERENCES PaymentMethod(method_id),
+  card_holder_name   VARCHAR(100)  NULL,
+  card_number_last4  VARCHAR(4)    NULL,  -- Solo los últimos 4 dígitos
+  card_expiry        VARCHAR(7)    NULL,  -- MM/YYYY
+  card_brand         VARCHAR(20)   NULL,  -- Visa, Mastercard, etc.
+  is_default         BIT           NOT NULL DEFAULT 0,
+  is_active          BIT           NOT NULL DEFAULT 1,
+  created_at         DATETIME      DEFAULT GETDATE(),
+  updated_at         DATETIME      DEFAULT GETDATE(),
+  UNIQUE(user_id, card_number_last4, card_expiry) -- Evitar tarjetas duplicadas
+);
+
 -- Insert default categories
 INSERT INTO Category (name) VALUES 
 ('Bebidas'),
