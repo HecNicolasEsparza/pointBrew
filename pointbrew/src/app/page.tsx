@@ -1,6 +1,5 @@
 'use client';
 import MockupLayout from '@/components/MockupLayout';
-import RestaurantCarousel from '@/components/RestaurantCarousel';
 import StoreManagement from '@/components/StoreManagement';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
@@ -50,11 +49,6 @@ export default function Home() {
 
           {/* Sección "Lo más popular el día" */}
           <section className="popular-section">
-            <h2 className="section-title">Lo más popular el día</h2>
-            
-            {/* Carrusel de restaurante destacado */}
-            <RestaurantCarousel />
-            
             {/* Gestión y lista de todas las tiendas - pass getStoreImage function */}
             <StoreManagement getStoreImage={getStoreImage} />
           </section>
