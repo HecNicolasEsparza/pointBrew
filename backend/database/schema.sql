@@ -121,6 +121,19 @@ CREATE TABLE Turn (
   desired_pickup DATETIME     NULL
 );
 
+
+CREATE TABLE Cart (
+  cart_id       INT           PRIMARY KEY IDENTITY,
+  user_id       INT           NOT NULL
+    REFERENCES [User](user_id),
+  product_id    INT           NOT NULL
+    REFERENCES Product(product_id),
+  quantity      INT           NOT NULL DEFAULT 1,
+  added_at      DATETIME      DEFAULT GETDATE(),
+  updated_at    DATETIME      DEFAULT GETDATE(),
+  UNIQUE(user_id, product_id)  -- Un usuario no puede tener el mismo producto duplicado
+);
+
 -- Tabla para relacionar empleados con tiendas
 CREATE TABLE StoreEmployee (
   id              INT           PRIMARY KEY IDENTITY,
@@ -135,6 +148,7 @@ CREATE TABLE StoreEmployee (
   created_at      DATETIME      DEFAULT GETDATE(),
   updated_at      DATETIME      DEFAULT GETDATE(),
   UNIQUE(store_id, user_id)  -- Un empleado no puede estar duplicado en la misma tienda
+
 );
 
 -- Insert initial data
