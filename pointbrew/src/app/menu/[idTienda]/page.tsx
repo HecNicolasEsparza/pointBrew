@@ -3,10 +3,15 @@ import './menu.css';
 import { FaShoppingCart } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { fetchProductsByStore } from '../../../contexts/services/getProductsService';
-import {Product} from '../../../contexts/models/products';
+import { Product } from '../../../contexts/models/products';
+import { addToCart } from '../../../contexts/services/cartService';
+import { useAuth } from '../../../contexts/AuthContext';
+
+
 export default function Menu() {
     const [products, setProducts] = useState<Product[]>([]);
     const [counts, setCounts] = useState<number[]>([]);
+    const { user } = useAuth();
 
     useEffect(() => {
         fetchProductsByStore(1)
@@ -20,6 +25,24 @@ export default function Menu() {
                 console.error("Error al cargar productos:", err);
             });
     }, []);
+
+    const handleAddToCart = async (productId: number, quantity: number) => {
+        const userId = user?.user_id;
+        
+
+        if (!userId) {
+            console.error("Usuario no autenticado.");
+            return;
+        }
+
+        try {
+            await addToCart({ user_id: userId, product_id: productId, quantity });
+            console.log("Producto agregado al carrito");
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err) {
+            console.error("No se pudo agregar al carrito");
+        }
+    };
 
     const handleDecrement = (index: number) => {
         setCounts(prev => {
@@ -62,7 +85,7 @@ export default function Menu() {
                             </div>
 
                             <div className="menu-actions">
-                                <button className="cart-btn">
+                                <button className="cart-btn" onClick={() => handleAddToCart(product.product_id, counts[i])}>
                                     <FaShoppingCart />
                                 </button>
 
