@@ -121,6 +121,20 @@ CREATE TABLE Turn (
   desired_pickup DATETIME     NULL
 );
 
+-- Tabla para relacionar empleados con tiendas
+CREATE TABLE StoreEmployee (
+  id              INT           PRIMARY KEY IDENTITY,
+  store_id        INT           NOT NULL
+    REFERENCES Store(store_id),
+  user_id         INT           NOT NULL
+    REFERENCES [User](user_id),
+  hire_date       DATE          NOT NULL DEFAULT GETDATE(),
+  is_active       BIT           NOT NULL DEFAULT 1,
+  created_at      DATETIME      DEFAULT GETDATE(),
+  updated_at      DATETIME      DEFAULT GETDATE(),
+  UNIQUE(store_id, user_id)  -- Un empleado no puede estar duplicado en la misma tienda
+);
+
 -- Insert initial data
 INSERT INTO Role (role_name) VALUES ('Admin'), ('Customer'), ('Employee');
 INSERT INTO PaymentMethod (method_name) VALUES ('Cash'), ('Credit Card'), ('Debit Card'), ('Mobile Payment');
@@ -134,3 +148,31 @@ INSERT INTO Category (name) VALUES
 ('Postres'),
 ('Aperitivos'),
 ('Otro');
+
+-- Queries útiles para manejo de empleados
+
+-- 1. Obtener todos los empleados de una tienda específica
+-- SELECT u.user_id, u.full_name, u.email, se.position, se.hire_date, se.is_manager
+-- FROM [User] u
+-- INNER JOIN StoreEmployee se ON u.user_id = se.user_id
+-- INNER JOIN Role r ON u.role_id = r.role_id
+-- WHERE se.store_id = @store_id AND r.role_name = 'Employee' AND se.is_active = 1
+-- ORDER BY se.is_manager DESC, u.full_name;
+
+-- 2. Obtener todas las tiendas donde trabaja un empleado
+-- SELECT s.store_id, s.name AS store_name, b.name AS branch_name, se.position, se.is_manager
+-- FROM Store s
+-- INNER JOIN StoreEmployee se ON s.store_id = se.store_id
+-- INNER JOIN Branch b ON s.branch_id = b.branch_id
+-- WHERE se.user_id = @user_id AND se.is_active = 1;
+
+-- 3. Lista completa de empleados con sus tiendas
+-- SELECT u.user_id, u.full_name, u.email, s.name AS store_name, 
+--        b.name AS branch_name, se.position, se.is_manager, se.hire_date
+-- FROM [User] u
+-- INNER JOIN StoreEmployee se ON u.user_id = se.user_id
+-- INNER JOIN Store s ON se.store_id = s.store_id
+-- INNER JOIN Branch b ON s.branch_id = b.branch_id
+-- INNER JOIN Role r ON u.role_id = r.role_id
+-- WHERE r.role_name = 'Employee' AND se.is_active = 1
+-- ORDER BY b.name, s.name, se.is_manager DESC, u.full_name;
