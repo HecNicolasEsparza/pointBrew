@@ -17,7 +17,7 @@ export default function Login() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/menu');
+      router.push('/');
     }
   }, [isAuthenticated, router]);
 
