@@ -4,7 +4,7 @@ import { FaShoppingCart } from 'react-icons/fa';
 import { useState } from 'react';
 
 export default function Menu() {
-    const [counts, setCounts] = useState(Array(10).fill(1)); // un contador por tarjeta
+    const [counts, setCounts] = useState(Array(10).fill(1));
 
     const handleDecrement = (index: number) => {
         setCounts(prev => {
