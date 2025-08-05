@@ -21,7 +21,7 @@ export default function RegisterStorePage() {
 
   // Redirigir si no está autenticado
   if (!isAuthenticated) {
-    router.push('/login');
+    router.push('/auth/login');
     return null;
   }
 

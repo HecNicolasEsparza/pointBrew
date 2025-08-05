@@ -51,7 +51,7 @@ export default function ManageStoresPage() {
   // Redirigir si no está autenticado o no es admin
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push('/auth/login');
       return;
     }
     if (user && user.role_name !== 'Admin') {
@@ -369,7 +369,7 @@ export default function ManageStoresPage() {
           </button>
           <h1>Administrar Mis Tiendas</h1>
           <button 
-            onClick={() => router.push('/register-store')}
+            onClick={() => router.push('/store/register-store')}
             className="add-store-btn"
           >
             + Registrar Nueva Tienda
@@ -392,7 +392,7 @@ export default function ManageStoresPage() {
                 <h3>No tienes tiendas registradas</h3>
                 <p>Registra tu primera tienda para comenzar a administrar tu negocio.</p>
                 <button 
-                  onClick={() => router.push('/register-store')}
+                  onClick={() => router.push('/store/register-store')}
                   className="register-first-store-btn"
                 >
                   Registrar Primera Tienda

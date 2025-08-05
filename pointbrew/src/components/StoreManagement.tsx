@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import ErrorDisplay from '@/components/ErrorDisplay';
+import { useApi, storesApi } from '@/hooks/useApi';
 import axios from 'axios';
 
 interface Store {
@@ -24,8 +26,7 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const [stores, setStores] = useState<Store[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { loading, error, execute } = useApi<Store[]>();
 
   useEffect(() => {
     fetchStores();
@@ -33,19 +34,13 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
 
   const fetchStores = async () => {
     try {
-      setLoading(true);
-      const response = await axios.get('http://localhost:3001/api/stores');
-      
-      if (response.data.success) {
-        setStores(response.data.data);
-      } else {
-        setError('Error al cargar las tiendas');
+      const response = await execute(() => storesApi.getAll());
+      if (response.success) {
+        setStores(response.data);
       }
     } catch (error) {
       console.error('Error fetching stores:', error);
-      setError('Error al conectar con el servidor');
-    } finally {
-      setLoading(false);
+      // El error ya está siendo manejado por useApi
     }
   };
 
@@ -83,12 +78,11 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
 
   if (error) {
     return (
-      <div className="store-management-error">
-        <p>{error}</p>
-        <button onClick={fetchStores} className="retry-btn">
-          Reintentar
-        </button>
-      </div>
+      <ErrorDisplay 
+        error={error} 
+        onRetry={fetchStores}
+        showDetails={true}
+      />
     );
   }
 
@@ -104,7 +98,7 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
           <p>No hay tiendas registradas aún.</p>
           {isAuthenticated && (
             <button 
-              onClick={() => router.push('/register-store')}
+              onClick={() => router.push('/store/register-store')}
               className="register-store-btn"
             >
               Registrar primera tienda

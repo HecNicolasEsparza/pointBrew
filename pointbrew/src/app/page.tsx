@@ -70,7 +70,7 @@ export default function Home() {
               Ofertas
             </div>
             {isAuthenticated && user?.role_name === 'Admin' ? (
-              <Link href="/manage-stores" className="nav-item">
+              <Link href="/store/manage-stores" className="nav-item">
                 Administrar Trabajo
               </Link>
             ) : (
@@ -79,7 +79,7 @@ export default function Home() {
               </div>
             )}
             {isAuthenticated ? (
-              <Link href="/register-store" className="nav-item">
+              <Link href="/store/register-store" className="nav-item">
                 Registrar una tienda
               </Link>
             ) : (

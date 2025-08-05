@@ -42,10 +42,10 @@ export default function MockupLayout({ title, children, showAuthButtons = true }
               </div>
             ) : (
               <>
-                <Link href="/login" className="nav-btn login-btn">
+                <Link href="/auth/login" className="nav-btn login-btn">
                   Iniciar sesión
                 </Link>
-                <Link href="/register" className="nav-btn register-btn">
+                <Link href="/auth/register" className="nav-btn register-btn">
                   Registrarse
                 </Link>
               </>

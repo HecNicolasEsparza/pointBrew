@@ -48,7 +48,7 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push('/auth/login');
       return;
     }
     if (user && user.role_name !== 'Admin') {
@@ -64,7 +64,8 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
       const response = await axios.get('http://localhost:3001/api/categories', {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        timeout: 10000 // 10 segundos timeout
       });
       
       if (response.data.success && response.data.data.length > 0) {
@@ -78,8 +79,23 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
           { category_id: 5, name: 'Otro' }
         ]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching categories:', error);
+      
+      // Mostrar error específico en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        if (error.code === 'ECONNREFUSED') {
+          setError('Backend no está corriendo. Inicia el servidor en el puerto 3001.');
+        } else if (error.response?.status === 404) {
+          setError('Endpoint de categorías no encontrado. Verifica las rutas del backend.');
+        } else if (error.message.includes('timeout')) {
+          setError('Timeout al conectar con el servidor. Verifica que el backend esté corriendo.');
+        } else {
+          setError(`Error de conexión: ${error.message}`);
+        }
+      }
+      
+      // Usar categorías por defecto como fallback
       setCategories([
         { category_id: 1, name: 'Bebidas' },
         { category_id: 2, name: 'Comida' },
@@ -93,10 +109,13 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setError(''); // Limpiar errores previos
+      
       const response = await axios.get(`http://localhost:3001/api/products/store/${storeId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        timeout: 10000 // 10 segundos timeout
       });
       
       if (response.data.success) {
@@ -113,10 +132,23 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
         setProducts(mappedProducts);
       } else {
         setError('Error al cargar los productos');
+        setProducts([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching products:', error);
-      setError('Error al conectar con el servidor');
+      
+      // Mostrar error específico
+      if (error.code === 'ECONNREFUSED') {
+        setError('No se puede conectar al servidor. Verifica que el backend esté corriendo en el puerto 3001.');
+      } else if (error.response?.status === 404) {
+        setError('Endpoint de productos no encontrado. Verifica las rutas del backend.');
+      } else if (error.response?.status === 401) {
+        setError('No autorizado. Por favor inicia sesión nuevamente.');
+      } else if (error.message.includes('timeout')) {
+        setError('Timeout al conectar con el servidor.');
+      } else {
+        setError(`Error al conectar con el servidor: ${error.message}`);
+      }
       setProducts([]);
     } finally {
       setLoading(false);
