@@ -4,8 +4,8 @@ import { FaShoppingCart } from 'react-icons/fa';
 import { useEffect, useState, use } from 'react';
 import { fetchProductsByStore } from '../../../contexts/services/getProductsService';
 import { Product } from '../../../contexts/models/products';
-import { addToCart } from '../../../contexts/services/cartService';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useCart } from '../../../contexts/CartContext';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import axios from 'axios';
@@ -28,7 +28,9 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
     const [store, setStore] = useState<Store | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>('');
+    const [addingToCart, setAddingToCart] = useState<number | null>(null);
     const { user } = useAuth();
+    const { addToCart, cartCount } = useCart();
     const router = useRouter();
 
     useEffect(() => {
@@ -79,11 +81,9 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
     };
 
     const handleAddToCart = async (productId: number, quantity: number) => {
-        const userId = user?.user_id;
-
-        if (!userId) {
-            console.error("Usuario no autenticado.");
+        if (!user) {
             alert("Debes iniciar sesión para agregar productos al carrito");
+            router.push('/auth/login');
             return;
         }
 
@@ -93,12 +93,19 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
         }
 
         try {
-            await addToCart({ user_id: userId, product_id: productId, quantity });
-            console.log("Producto agregado al carrito");
-            alert("Producto agregado al carrito exitosamente");
+            setAddingToCart(productId);
+            const success = await addToCart(productId, quantity);
+            
+            if (success) {
+                alert("Producto agregado al carrito exitosamente");
+            } else {
+                alert("Error al agregar producto al carrito");
+            }
         } catch (err) {
-            console.error("No se pudo agregar al carrito");
+            console.error("Error al agregar al carrito:", err);
             alert("Error al agregar producto al carrito");
+        } finally {
+            setAddingToCart(null);
         }
     };
 
@@ -116,6 +123,15 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
             updated[index] = updated[index] + 1;
             return updated;
         });
+    };
+
+    const handleGoToCart = () => {
+        if (!user) {
+            alert("Debes iniciar sesión para ver el carrito");
+            router.push('/auth/login');
+            return;
+        }
+        router.push('/Cart');
     };
 
     if (loading) {
@@ -196,10 +212,10 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
                                             <button 
                                                 className="cart-btn-kfc" 
                                                 onClick={() => handleAddToCart(product.product_id, counts[i])}
-                                                disabled={counts[i] === 0 || !user}
+                                                disabled={counts[i] === 0 || !user || addingToCart === product.product_id}
                                                 title={!user ? "Inicia sesión para agregar al carrito" : "Agregar al carrito"}
                                             >
-                                                <FaShoppingCart />
+                                                {addingToCart === product.product_id ? '...' : <FaShoppingCart />}
                                             </button>
 
                                             <div className="quantity-controls-kfc">
@@ -224,6 +240,18 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
                         )}
                     </div>
                 </div>
+
+                {/* Botón flotante del carrito */}
+                {user && cartCount > 0 && (
+                    <button 
+                        className="floating-cart-btn"
+                        onClick={handleGoToCart}
+                        title="Ver carrito"
+                    >
+                        <FaShoppingCart />
+                        <span className="cart-count-badge">{cartCount}</span>
+                    </button>
+                )}
             </div>
         </MockupLayout>
     );
