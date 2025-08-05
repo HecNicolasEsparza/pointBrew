@@ -78,11 +78,11 @@ export default function Home() {
                 Administrar Trabajo
               </div>
             )}
-            {isAuthenticated ? (
+            {isAuthenticated && user?.role_name !== 'Employee' ? (
               <Link href="/store/register-store" className="nav-item">
                 Registrar una tienda
               </Link>
-            ) : (
+            ) : user?.role_name === 'Employee' ? null : (
               <div className="nav-item disabled">
                 Registrar una tienda
               </div>

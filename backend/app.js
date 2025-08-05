@@ -17,6 +17,7 @@ var turnsRouter = require('./routes/turns');
 var catalogRouter = require('./routes/catalog');
 var categoryRouter = require('./routes/categoryRoutes');
 var cartRouter = require('./routes/cart');
+var storeEmployeesRouter = require('./routes/storeEmployees');
 
 var app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/turns', turnsRouter);
 app.use('/api/catalog', catalogRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/cart', cartRouter);
+app.use('/api/store-employees', storeEmployeesRouter);
 // app.use('/api/store-registration', storeRegistrationRouter);
 
 // catch 404 and forward to error handler

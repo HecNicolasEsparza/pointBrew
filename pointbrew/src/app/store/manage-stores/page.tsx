@@ -541,6 +541,23 @@ export default function ManageStoresPage() {
                           >
                             ⚙️ Configurar
                           </button>
+                          
+                          <button 
+                            onClick={() => router.push(`/store/${store.store_id}/manage-employees`)}
+                            style={{
+                              backgroundColor: '#8B5CF6',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            title="Administrar empleados de la tienda"
+                          >
+                            👥 Administrar Empleados
+                          </button>
                         </div>
                       </div>
                     </div>

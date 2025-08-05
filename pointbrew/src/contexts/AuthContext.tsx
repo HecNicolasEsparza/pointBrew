@@ -19,6 +19,7 @@ interface AuthContextType {
   register: (full_name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  updateUserRole: (newRole: 'Customer' | 'Employee') => Promise<{ success: boolean; message?: string }>;
   loading: boolean;
   isAuthenticated: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
@@ -176,6 +177,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUserRole = async (newRole: 'Customer' | 'Employee') => {
+    try {
+      setLoading(true);
+      
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
+      const response = await axios.put('/api/users/role/update', {
+        newRole
+      });
+
+      if (response.data.success) {
+        // Update user data in state and cookies
+        const updatedUser = response.data.data;
+        setUser(updatedUser);
+        Cookies.set('auth_user', JSON.stringify(updatedUser), { expires: 1 });
+        
+        return { success: true, message: response.data.message };
+      } else {
+        return { success: false, message: response.data.message };
+      }
+    } catch (error: any) {
+      console.error('Error updating user role:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Error updating role' 
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -195,6 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     logout,
     refreshUser,
+    updateUserRole,
     loading,
     isAuthenticated,
     setUser

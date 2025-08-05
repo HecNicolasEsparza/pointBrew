@@ -30,13 +30,24 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
 
   useEffect(() => {
     fetchStores();
-  }, []);
+  }, [user]); // Add user dependency to refetch when user changes
 
   const fetchStores = async () => {
     try {
-      const response = await execute(() => storesApi.getAll());
-      if (response.success) {
-        setStores(response.data);
+      let response;
+      
+      // If user is Employee, get only stores where they work
+      if (user?.role_name === 'Employee') {
+        response = await axios.get('/api/store-employees/my-stores');
+        if (response.data.success) {
+          setStores(response.data.data);
+        }
+      } else {
+        // For Admin/Customer, get all stores
+        response = await execute(() => storesApi.getAll());
+        if (response.success) {
+          setStores(response.data);
+        }
       }
     } catch (error) {
       console.error('Error fetching stores:', error);
@@ -46,6 +57,10 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
 
   const isUserAdmin = () => {
     return user && user.role_name === 'Admin';
+  };
+
+  const isUserEmployee = () => {
+    return user && user.role_name === 'Employee';
   };
 
   const handleEditMenu = (storeId: number) => {
@@ -89,20 +104,38 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
   return (
     <div className="store-management">
       <div className="store-management-header">
-        <h2>Todas las Tiendas Registradas</h2>
-        <p>{stores.length} tienda{stores.length !== 1 ? 's' : ''} disponible{stores.length !== 1 ? 's' : ''}</p>
+        <h2>
+          {isUserEmployee() 
+            ? 'Mis Tiendas de Trabajo' 
+            : 'Todas las Tiendas Registradas'
+          }
+        </h2>
+        <p>
+          {stores.length} tienda{stores.length !== 1 ? 's' : ''} 
+          {isUserEmployee() ? ' asignada' : ' disponible'}
+          {stores.length !== 1 ? 's' : ''}
+        </p>
       </div>
 
       {stores.length === 0 ? (
         <div className="no-stores">
-          <p>No hay tiendas registradas aún.</p>
-          {isAuthenticated && (
-            <button 
-              onClick={() => router.push('/store/register-store')}
-              className="register-store-btn"
-            >
-              Registrar primera tienda
-            </button>
+          {isUserEmployee() ? (
+            <div className="employee-no-stores">
+              <p>No tienes tiendas asignadas aún.</p>
+              <p>Contacta con un administrador para que te asigne a una tienda.</p>
+            </div>
+          ) : (
+            <div className="admin-no-stores">
+              <p>No hay tiendas registradas aún.</p>
+              {isAuthenticated && !isUserEmployee() && (
+                <button 
+                  onClick={() => router.push('/store/register-store')}
+                  className="register-store-btn"
+                >
+                  Registrar primera tienda
+                </button>
+              )}
+            </div>
           )}
         </div>
       ) : (
