@@ -3,6 +3,7 @@ import MockupLayout from '@/components/MockupLayout';
 import StoreManagement from '@/components/StoreManagement';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import styles from './page.module.css';
 
 interface Store {
   store_id: number;
@@ -31,54 +32,54 @@ export default function Home() {
   return (
     <MockupLayout title="Point Brew" showAuthButtons={true}>
       {/* Logo fijo en la parte superior izquierda */}
-      <div className="logo-fixed">
-        <img src="/img/Logo.png" alt="Point Brew Logo" className="main-logo" />
+      <div className={styles.logoFixed}>
+        <img src="/img/Logo.png" alt="Point Brew Logo" className={styles.mainLogo} />
       </div>
 
-      <div className="landing-container">
-        <div className="main-overview">
+      <div className={styles.landingContainer}>
+        <div className={styles.mainOverview}>
           {/* Barra de búsqueda */}
-          <div className="search-container">
+          <div className={styles.searchContainer}>
             <input 
               type="text" 
               placeholder="Buscar tu local" 
-              className={`search-input ${!isAuthenticated ? 'disabled' : ''}`}
+              className={`${styles.searchInput} ${!isAuthenticated ? 'disabled' : ''}`}
               disabled={!isAuthenticated}
             />
           </div>
 
           {/* Sección "Lo más popular el día" */}
-          <section className="popular-section">
+          <section className={styles.popularSection}>
             {/* Gestión y lista de todas las tiendas - pass getStoreImage function */}
             <StoreManagement getStoreImage={getStoreImage} />
           </section>
         </div>
 
         {/* Sidebar de navegación del lado derecho */}
-        <aside className="sidebar">
-          <nav className="sidebar-nav">
-            <Link href="/" className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
+        <aside className={styles.sidebar}>
+          <nav className={styles.sidebarNav}>
+            <Link href="/" className={`${styles.navItem} ${!isAuthenticated ? 'disabled' : ''}`}>
               Inicio
             </Link>
-            <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
+            <div className={`${styles.navItem} ${!isAuthenticated ? 'disabled' : ''}`}>
               Ofertas
             </div>
             {isAuthenticated && user?.role_name === 'Admin' && (
-              <Link href="/store/manage-stores" className="nav-item">
+              <Link href="/store/manage-stores" className={styles.navItem}>
                 Administrar mis tiendas
               </Link>
             )}
             {isAuthenticated && user?.role_name === 'Employee' && (
-              <Link href="/store/manage-worker-stores" className="nav-item">
+              <Link href="/store/manage-worker-stores" className={styles.navItem}>
                 Administrar tiendas en las que trabajo
               </Link>
             )}
             {isAuthenticated && user?.role_name !== 'Employee' ? (
-              <Link href="/store/register-store" className="nav-item">
+              <Link href="/store/register-store" className={styles.navItem}>
                 Registrar una tienda
               </Link>
             ) : user?.role_name === 'Employee' ? null : (
-              <div className="nav-item disabled">
+              <div className={`${styles.navItem} disabled`}>
                 Registrar una tienda
               </div>
             )}

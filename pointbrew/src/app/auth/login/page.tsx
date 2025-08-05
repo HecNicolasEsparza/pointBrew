@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import styles from '@/components/Auth.module.css';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -43,22 +44,22 @@ export default function Login() {
 
   return (
     <MockupLayout title="Point Brew" showAuthButtons={false}>
-      <div className="auth-container">
-        <div className="auth-form-container">
-          <div className="logo-section">
-            <img src="/img/Logo.png" alt="Point Brew Logo" className="auth-logo" />
+      <div className={styles.authContainer}>
+        <div className={styles.authFormContainer}>
+          <div className={styles.logoSection}>
+            <img src="/img/Logo.png" alt="Point Brew Logo" className={styles.authLogo} />
             <h2>Point Brew</h2>
             <p>Iniciar sesión</p>
           </div>
           
-          <form className="auth-form" onSubmit={handleSubmit}>
+          <form className={styles.authForm} onSubmit={handleSubmit}>
             {error && (
               <div className="error-message">
                 {error}
               </div>
             )}
             
-            <div className="form-group">
+            <div className={styles.formGroup}>
               <label htmlFor="email">Correo electrónico</label>
               <input 
                 type="email" 
@@ -70,7 +71,7 @@ export default function Login() {
               />
             </div>
             
-            <div className="form-group">
+            <div className={styles.formGroup}>
               <label htmlFor="password">Contraseña</label>
               <input 
                 type="password" 
@@ -82,18 +83,18 @@ export default function Login() {
               />
             </div>
             
-            <button type="submit" className="auth-btn" disabled={loading}>
+            <button type="submit" className={styles.authBtn} disabled={loading}>
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
             
-            <p className="auth-link">
+            <p className={styles.authLink}>
               ¿No tienes una cuenta? <Link href="/auth/register">Regístrate</Link>
             </p>
           </form>
         </div>
         
-        <div className="auth-image">
-          <div className="cafe-bg"></div>
+        <div className={styles.authImage}>
+          <div className={styles.cafeBg}></div>
         </div>
       </div>
     </MockupLayout>

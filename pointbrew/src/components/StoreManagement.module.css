@@ -1,0 +1,138 @@
+/* Store Management component styles */
+.storeManagement {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.storeCard {
+  background-color: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e5e5;
+}
+
+.storeCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.storeImageContainer {
+  width: 100px;
+  height: 100px;
+  margin-right: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.storeImageContainer:hover {
+  transform: scale(1.05);
+}
+
+.storeImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.storeInfo {
+  flex: 1;
+}
+
+.storeName {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--navbar-bg);
+}
+
+.storeDescription {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.storeLocation {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.locationIcon {
+  font-size: 1.2rem;
+  margin-top: 0.1rem;
+}
+
+.branchName {
+  margin: 0 0 0.25rem 0;
+  font-weight: 600;
+  color: var(--navbar-bg);
+  font-size: 0.95rem;
+}
+
+.branchAddress {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Loading state */
+.storeManagementLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--navbar-bg);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.storeManagementLoading p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .storeCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .storeImageContainer {
+    margin-right: 0;
+    margin-bottom: 1rem;
+    width: 80px;
+    height: 80px;
+  }
+
+  .storeInfo {
+    width: 100%;
+  }
+
+  .storeLocation {
+    justify-content: center;
+  }
+}

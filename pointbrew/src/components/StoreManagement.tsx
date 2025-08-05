@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import { useApi, storesApi } from '@/hooks/useApi';
 import axios from 'axios';
+import styles from './StoreManagement.module.css';
 
 interface Store {
   store_id: number;
@@ -79,8 +80,8 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
 
   if (loading) {
     return (
-      <div className="store-management-loading">
-        <div className="loading-spinner"></div>
+      <div className={styles.storeManagementLoading}>
+        <div className={styles.loadingSpinner}></div>
         <p>Cargando tiendas...</p>
       </div>
     );
@@ -97,30 +98,30 @@ export default function StoreManagement({ getStoreImage }: StoreManagementProps)
   }
 
   return (
-    <div className="store-management">
+    <div className={styles.storeManagement}>
       {stores.map((store) => (
-        <div key={store.store_id} className="store-card">
+        <div key={store.store_id} className={styles.storeCard}>
           {/* Hacer clickeable toda la imagen */}
           <div 
-            className="store-image-container"
+            className={styles.storeImageContainer}
             onClick={() => handleStoreClick(store.store_id)}
             style={{ cursor: 'pointer' }}
           >
             <img
-              src={getStoreImage(store)}
+              src={getStoreImage ? getStoreImage(store) : getDefaultStoreImage(store)}
               alt={store.name}
-              className="store-image"
+              className={styles.storeImage}
             />
           </div>
 
-          <div className="store-info">
-            <h3 className="store-name">{store.name}</h3>
-            <p className="store-description">{store.description}</p>
-            <div className="store-location">
-              <span className="location-icon">📍</span>
+          <div className={styles.storeInfo}>
+            <h3 className={styles.storeName}>{store.name}</h3>
+            <p className={styles.storeDescription}>{store.description}</p>
+            <div className={styles.storeLocation}>
+              <span className={styles.locationIcon}>📍</span>
               <div>
-                <p className="branch-name">{store.branch_name}</p>
-                <p className="branch-address">{store.branch_address}</p>
+                <p className={styles.branchName}>{store.branch_name}</p>
+                <p className={styles.branchAddress}>{store.branch_address}</p>
               </div>
             </div>
           </div>
