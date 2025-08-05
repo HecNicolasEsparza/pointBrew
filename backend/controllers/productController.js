@@ -82,11 +82,11 @@ const productController = {
       const result = await pool.request()
         .input('storeId', sql.Int, storeId)
         .query(`
-          SELECT p.product_id, p.name, p.price, p.available, p.created_at, p.updated_at,
+          SELECT p.product_id, p.name, p.price, p.available, p.image_url, p.created_at, p.updated_at,
                  c.name as category_name, c.category_id
           FROM Product p
           LEFT JOIN Category c ON p.category_id = c.category_id
-          WHERE p.store_id = @storeId AND p.available = 1
+          WHERE p.store_id = @storeId
           ORDER BY p.name
         `);
 
@@ -107,7 +107,7 @@ const productController = {
   // Create new product
   createProduct: async (req, res) => {
     try {
-      const { store_id, category_id, name, price, available = true } = req.body;
+      const { store_id, category_id, name, price, image_url, available = true } = req.body;
 
       if (!store_id || !name || !price) {
         return res.status(400).json({
@@ -118,17 +118,32 @@ const productController = {
 
       const pool = getPool();
       
+      // Verify category exists if provided
+      if (category_id) {
+        const categoryCheck = await pool.request()
+          .input('categoryId', sql.Int, category_id)
+          .query('SELECT category_id FROM Category WHERE category_id = @categoryId');
+        
+        if (categoryCheck.recordset.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Category with ID ${category_id} does not exist`
+          });
+        }
+      }
+      
       const result = await pool.request()
         .input('storeId', sql.Int, store_id)
-        .input('categoryId', sql.Int, category_id || null)
+        .input('categoryId', category_id ? sql.Int : sql.VarChar, category_id || null)
         .input('name', sql.VarChar(100), name)
         .input('price', sql.Decimal(10, 2), price)
+        .input('imageUrl', sql.VarChar(500), image_url || null)
         .input('available', sql.Bit, available)
         .query(`
-          INSERT INTO Product (store_id, category_id, name, price, available)
+          INSERT INTO Product (store_id, category_id, name, price, image_url, available)
           OUTPUT INSERTED.product_id, INSERTED.store_id, INSERTED.category_id, 
-                 INSERTED.name, INSERTED.price, INSERTED.available, INSERTED.created_at
-          VALUES (@storeId, @categoryId, @name, @price, @available)
+                 INSERTED.name, INSERTED.price, INSERTED.image_url, INSERTED.available, INSERTED.created_at
+          VALUES (@storeId, @categoryId, @name, @price, @imageUrl, @available)
         `);
 
       res.status(201).json({
@@ -150,7 +165,7 @@ const productController = {
   updateProduct: async (req, res) => {
     try {
       const { id } = req.params;
-      const { store_id, category_id, name, price, available } = req.body;
+      const { store_id, category_id, name, price, image_url, available } = req.body;
 
       const pool = getPool();
       
@@ -160,6 +175,7 @@ const productController = {
         .input('categoryId', sql.Int, category_id || null)
         .input('name', sql.VarChar(100), name)
         .input('price', sql.Decimal(10, 2), price)
+        .input('imageUrl', sql.VarChar(500), image_url || null)
         .input('available', sql.Bit, available)
         .query(`
           UPDATE Product 
@@ -167,10 +183,11 @@ const productController = {
               category_id = @categoryId,
               name = @name, 
               price = @price,
+              image_url = @imageUrl,
               available = @available,
               updated_at = GETDATE()
           OUTPUT INSERTED.product_id, INSERTED.store_id, INSERTED.category_id,
-                 INSERTED.name, INSERTED.price, INSERTED.available, INSERTED.updated_at
+                 INSERTED.name, INSERTED.price, INSERTED.image_url, INSERTED.available, INSERTED.updated_at
           WHERE product_id = @productId
         `);
 

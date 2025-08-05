@@ -24,6 +24,7 @@ CREATE TABLE [User] (
   full_name    VARCHAR(100)  NOT NULL,
   email        VARCHAR(100)  NOT NULL UNIQUE,
   password     VARCHAR(255)  NOT NULL,
+  image_url    VARCHAR(500)  NULL,
   role_id      INT           NOT NULL
     REFERENCES Role(role_id),
   created_at   DATETIME      DEFAULT GETDATE(),
@@ -43,7 +44,8 @@ CREATE TABLE Store (
   branch_id    INT           NOT NULL
     REFERENCES Branch(branch_id),
   name         VARCHAR(100)  NOT NULL,
-  description  VARCHAR(50)   NULL,
+  description  VARCHAR(500)  NULL,
+  image_url    VARCHAR(500)  NULL,
   owner_id     INT           NULL
     REFERENCES [User](user_id),
   created_at   DATETIME      DEFAULT GETDATE(),
@@ -63,6 +65,7 @@ CREATE TABLE Product (
     REFERENCES Category(category_id),
   name           VARCHAR(100) NOT NULL,
   price          DECIMAL(10,2)NOT NULL,
+  image_url      VARCHAR(500) NULL,
   available      BIT          NOT NULL DEFAULT 1,
   created_at     DATETIME     DEFAULT GETDATE(),
   updated_at     DATETIME     DEFAULT GETDATE()
@@ -123,3 +126,11 @@ INSERT INTO Role (role_name) VALUES ('Admin'), ('Customer'), ('Employee');
 INSERT INTO PaymentMethod (method_name) VALUES ('Cash'), ('Credit Card'), ('Debit Card'), ('Mobile Payment');
 INSERT INTO PaymentStatus (status_name) VALUES ('Pending'), ('Completed'), ('Failed'), ('Refunded');
 INSERT INTO TurnStatus (status_name) VALUES ('Waiting'), ('In Progress'), ('Ready'), ('Completed'), ('Cancelled');
+
+-- Insert default categories
+INSERT INTO Category (name) VALUES 
+('Bebidas'),
+('Comida'),
+('Postres'),
+('Aperitivos'),
+('Otro');

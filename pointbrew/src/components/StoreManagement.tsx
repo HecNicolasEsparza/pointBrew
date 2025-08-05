@@ -11,10 +11,16 @@ interface Store {
   description: string;
   branch_name: string;
   branch_address: string;
+  image_url?: string;
   created_at: string;
+  updated_at: string;
 }
 
-export default function StoreManagement() {
+interface StoreManagementProps {
+  getStoreImage?: (store: Store) => string;
+}
+
+export default function StoreManagement({ getStoreImage }: StoreManagementProps) {
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const [stores, setStores] = useState<Store[]>([]);
@@ -57,18 +63,13 @@ export default function StoreManagement() {
     router.push(`/store/${storeId}`);
   };
 
-  const getStoreImage = (storeName: string): string => {
-    if (storeName.toLowerCase().includes('kfc') || storeName.toLowerCase().includes('pollo')) {
-      return "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (storeName.toLowerCase().includes('hamburguesa') || storeName.toLowerCase().includes('burger')) {
-      return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (storeName.toLowerCase().includes('pizza')) {
-      return "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else if (storeName.toLowerCase().includes('café') || storeName.toLowerCase().includes('coffee')) {
-      return "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
-    } else {
-      return "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
+  const getDefaultStoreImage = (store: Store): string => {
+    // Use custom image if available
+    if (store.image_url && store.image_url.trim() !== '') {
+      return store.image_url;
     }
+    // Fallback to default image
+    return "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
   };
 
   if (loading) {
@@ -116,40 +117,36 @@ export default function StoreManagement() {
             <div key={store.store_id} className="store-card">
               <div className="store-image-container">
                 <img 
-                  src={getStoreImage(store.name)} 
+                  src={getDefaultStoreImage(store)} 
                   alt={store.name}
                   className="store-image"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
+                  }}
                 />
+                <div className="store-overlay">
+                  <button 
+                    onClick={() => handleViewStore(store.store_id)}
+                    className="visit-store-btn"
+                  >
+                    Visitar Tienda
+                  </button>
+                </div>
               </div>
               
               <div className="store-info">
                 <h3 className="store-name">{store.name}</h3>
-                <p className="store-description">{store.description || 'Sin descripción'}</p>
-                <div className="store-location">
-                  <strong>{store.branch_name}</strong>
-                  <span>{store.branch_address}</span>
-                </div>
-                <p className="store-date">
-                  Registrada: {new Date(store.created_at).toLocaleDateString('es-ES')}
+                <p className="store-description">
+                  {store.description || 'Descubre nuestros deliciosos productos'}
                 </p>
-              </div>
-
-              <div className="store-actions">
-                <button 
-                  onClick={() => handleViewStore(store.store_id)}
-                  className="view-btn"
-                >
-                  Ver Tienda
-                </button>
-                
-                {isUserAdmin() && (
-                  <button 
-                    onClick={() => handleEditMenu(store.store_id)}
-                    className="edit-menu-btn"
-                  >
-                    Editar Menú
-                  </button>
-                )}
+                <div className="store-location">
+                  <span className="location-icon">📍</span>
+                  <div>
+                    <div className="branch-name">{store.branch_name}</div>
+                    <div className="branch-address">{store.branch_address}</div>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
