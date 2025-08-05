@@ -53,9 +53,11 @@ export const addPaymentMethod = async (data: UserPaymentRequest): Promise<void> 
 export const getUserPaymentMethods = async (userId: number): Promise<UserPaymentMethod[]> => {
   try {
     const response = await axios.get(`${BACKEND_ROUTE}/user-payment/${userId}`);
-    return response.data;
+    console.log('Respuesta del backend:', response.data);
+    return response.data.data; // ✅ accede al array correcto
   } catch (error) {
     console.error("Error al obtener métodos de pago:", error);
     throw error;
   }
 };
+

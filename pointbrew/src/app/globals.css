@@ -8,6 +8,42 @@
   --add-btn: #F6EFE3;
 }
 
+.confirm-button {
+  background-color: #55eb77;
+  color: white;
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-right: 10px;
+}
+
+.confirm-button:hover {
+  transform: scale(1.05);
+}
+
+.choose-payment-back {
+  background-color: #e0e0e0;
+  color: black;
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.choose-payment-back:hover {
+  transform: scale(1.05);
+}
+
+
 body {
   background-color: var(--menu-bg);
   margin: 0;
