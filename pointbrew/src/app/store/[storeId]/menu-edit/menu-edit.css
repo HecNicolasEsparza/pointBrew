@@ -1,0 +1,11 @@
+.menu-edit-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.menu-edit-header h1 {
+  color: var(--navbar-bg);
+  font-size: 2rem;
+  margin: 0;
+}

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import axios from 'axios';
+import "./menu-edit.css"
 
 interface Product {
   product_id: number;
@@ -399,8 +400,8 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
 
   return (
     <MockupLayout title="Editar Menú" showAuthButtons={true}>
-      <div className="menu-edit-container">
-        <div className="menu-edit-header">
+      <div className="menu-edit-container"> {/*este ya está separado*/}
+        <div className="menu-edit-header"> {/*este ya está separado*/}
           <button 
             onClick={() => router.back()}
             className="back-btn"
