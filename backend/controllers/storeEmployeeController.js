@@ -261,6 +261,50 @@ const storeEmployeeController = {
         error: error.message
       });
     }
+  },
+
+  // Get stores where a user works as employee
+  getEmployeeStores: async (req, res) => {
+    try {
+      const userId = req.user.user_id; // Get from authenticated user
+      const pool = getPool();
+      
+      const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query(`
+          SELECT 
+            s.store_id,
+            s.name,
+            s.description,
+            s.image_url,
+            s.created_at,
+            s.updated_at,
+            b.name as branch_name,
+            b.address as branch_address,
+            se.position,
+            se.is_manager,
+            se.hire_date
+          FROM Store s
+          INNER JOIN Branch b ON s.branch_id = b.branch_id
+          INNER JOIN StoreEmployee se ON s.store_id = se.store_id
+          WHERE se.user_id = @userId AND se.is_active = 1
+          ORDER BY s.name
+        `);
+      
+      console.log(`Found ${result.recordset.length} stores for employee ${userId}`);
+      
+      res.json({
+        success: true,
+        data: result.recordset
+      });
+    } catch (error) {
+      console.error('Error getting employee stores:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error retrieving employee stores',
+        error: error.message
+      });
+    }
   }
 };
 
