@@ -155,6 +155,105 @@ const userController = {
     }
   },
 
+  // Update user role
+  updateUserRole: async (req, res) => {
+    try {
+      const userId = req.user.user_id; // Get from authenticated user
+      const { newRole } = req.body;
+      
+      if (!newRole || (newRole !== 'Customer' && newRole !== 'Employee')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role. Only Customer and Employee roles are allowed for self-update.'
+        });
+      }
+
+      const pool = getPool();
+      
+      // Get current user data
+      const currentUserResult = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query(`
+          SELECT u.user_id, u.full_name, u.email, r.role_name, r.role_id
+          FROM [User] u
+          INNER JOIN Role r ON u.role_id = r.role_id
+          WHERE u.user_id = @userId
+        `);
+
+      if (currentUserResult.recordset.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      const currentUser = currentUserResult.recordset[0];
+      
+      // Check if user is Admin - Admins cannot change their role
+      if (currentUser.role_name === 'Admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Admins cannot change their role'
+        });
+      }
+
+      // Check if user is already in the requested role
+      if (currentUser.role_name === newRole) {
+        return res.status(400).json({
+          success: false,
+          message: `You are already a ${newRole}`
+        });
+      }
+
+      // Get the role_id for the new role
+      const roleResult = await pool.request()
+        .input('roleName', sql.VarChar, newRole)
+        .query(`SELECT role_id FROM Role WHERE role_name = @roleName`);
+
+      if (roleResult.recordset.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role specified'
+        });
+      }
+
+      const newRoleId = roleResult.recordset[0].role_id;
+
+      // Update user role
+      await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('roleId', sql.Int, newRoleId)
+        .query(`
+          UPDATE [User] 
+          SET role_id = @roleId, updated_at = GETDATE()
+          WHERE user_id = @userId
+        `);
+
+      // Get updated user data to return
+      const updatedUserResult = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query(`
+          SELECT u.user_id, u.full_name, u.email, r.role_name, r.role_id, u.created_at
+          FROM [User] u
+          INNER JOIN Role r ON u.role_id = r.role_id
+          WHERE u.user_id = @userId
+        `);
+
+      res.json({
+        success: true,
+        message: `Role updated successfully to ${newRole}`,
+        data: updatedUserResult.recordset[0]
+      });
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error updating user role',
+        error: error.message
+      });
+    }
+  },
+
   // Delete user
   deleteUser: async (req, res) => {
     try {

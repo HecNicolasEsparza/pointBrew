@@ -2862,3 +2862,82 @@ body {
   font-size: 0.9rem;
   font-weight: 500;
 }
+
+/* Role Changer Component Styles */
+.role-changer-container {
+  max-width: 400px;
+  margin: 0 auto;
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.role-changer-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.role-changer-container h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  color: #1f2937;
+}
+
+.role-changer-container button {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.role-changer-container button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.role-changer-container button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.role-changer-container button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Profile Role Section */
+.profile-role-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+.profile-role-section h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.profile-role-section .role-changer-container {
+  max-width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .role-changer-container {
+    margin: 0 1rem;
+    max-width: none;
+  }
+  
+  .profile-role-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+  
+  .profile-role-section h2 {
+    font-size: 1.2rem;
+  }
+}

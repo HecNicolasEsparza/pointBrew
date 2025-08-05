@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
+import RoleChanger from '@/components/RoleChanger';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Profile() {
@@ -59,6 +60,14 @@ export default function Profile() {
             <span>{new Date(user.created_at).toLocaleDateString('es-ES')}</span>
           </div>
         </div>
+
+        {/* Role Changer Component - Solo visible para usuarios que no sean Admin */}
+        {user.role_name !== 'Admin' && (
+          <div className="profile-role-section">
+            <h2>Gestión de Rol</h2>
+            <RoleChanger />
+          </div>
+        )}
       </div>
     </MockupLayout>
   );
