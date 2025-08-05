@@ -38,7 +38,7 @@ const storeController = {
         .input('userId', sql.Int, userId)
         .query(`
           SELECT s.store_id, s.name, s.description, s.image_url, s.created_at, s.updated_at,
-                 b.name as branch_name, b.address as branch_address
+                 b.name as branch_name, b.address as branch_address, b.branch_id
           FROM Store s
           INNER JOIN Branch b ON s.branch_id = b.branch_id
           WHERE s.owner_id = @userId
@@ -69,7 +69,7 @@ const storeController = {
         .input('storeId', sql.Int, id)
         .query(`
           SELECT s.store_id, s.name, s.description, s.image_url, s.created_at, s.updated_at,
-                 b.name as branch_name, b.address as branch_address
+                 b.name as branch_name, b.address as branch_address, b.branch_id
           FROM Store s
           INNER JOIN Branch b ON s.branch_id = b.branch_id
           WHERE s.store_id = @storeId

@@ -413,57 +413,135 @@ export default function ManageStoresPage() {
 
                 <div className="stores-grid">
                   {stores.map((store) => (
-                    <div key={store.store_id} className="store-management-card">
-                      <div className="store-image-container">
+                    <div key={store.store_id} style={{
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                      transition: 'transform 0.2s ease'
+                    }}>
+                      <div style={{
+                        position: 'relative',
+                        width: '100%',
+                        height: '200px',
+                        overflow: 'hidden'
+                      }}>
                         <img 
                           src={getStoreImage(store)} 
                           alt={store.name}
-                          className="store-image"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: 'center'
+                          }}
                         />
-                        <div className="store-status-badge">
-                          <span className="status-active">Activa</span>
+                        <div style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          backgroundColor: '#10B981',
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '500'
+                        }}>
+                          Activa
                         </div>
                       </div>
                       
-                      <div className="store-info">
-                        <h3 className="store-name">{store.name}</h3>
-                        <p className="store-description">{store.description || 'Sin descripción'}</p>
-                        <div className="store-location">
-                          <strong>{store.branch_name}</strong>
-                          <span>{store.branch_address}</span>
+                      <div style={{ padding: '16px' }}>
+                        <h3 style={{
+                          margin: '0 0 8px 0',
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#1F2937'
+                        }}>
+                          {store.name}
+                        </h3>
+                        <p style={{
+                          margin: '0 0 12px 0',
+                          fontSize: '14px',
+                          color: '#6B7280'
+                        }}>
+                          {store.description || 'Sin descripción'}
+                        </p>
+                        <div style={{ marginBottom: '12px' }}>
+                          <strong style={{ fontSize: '14px', color: '#1F2937' }}>
+                            {store.branch_name}
+                          </strong>
+                          <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                            {store.branch_address}
+                          </div>
                         </div>
-                        <div className="store-dates">
-                          <small>Registrada: {new Date(store.created_at).toLocaleDateString('es-ES')}</small>
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: '#9CA3AF',
+                          marginBottom: '16px'
+                        }}>
+                          <div>Registrada: {new Date(store.created_at).toLocaleDateString('es-ES')}</div>
                           {store.updated_at !== store.created_at && (
-                            <small>Actualizada: {new Date(store.updated_at).toLocaleDateString('es-ES')}</small>
+                            <div>Actualizada: {new Date(store.updated_at).toLocaleDateString('es-ES')}</div>
                           )}
                         </div>
-                      </div>
 
-                      <div className="store-management-actions">
-                        <button 
-                          onClick={() => handleViewStore(store.store_id)}
-                          className="view-store-btn"
-                          title="Ver tienda pública"
-                        >
-                          👁️ Ver Tienda
-                        </button>
-                        
-                        <button 
-                          onClick={() => handleEditMenu(store.store_id)}
-                          className="edit-menu-btn"
-                          title="Administrar menú de productos"
-                        >
-                          📋 Editar Menú
-                        </button>
-                        
-                        <button 
-                          onClick={() => handleEditStore(store)}
-                          className="edit-store-btn"
-                          title="Configurar información de la tienda"
-                        >
-                          ⚙️ Configurar
-                        </button>
+                        <div style={{
+                          display: 'flex',
+                          gap: '8px',
+                          flexWrap: 'wrap'
+                        }}>
+                          <button 
+                            onClick={() => handleViewStore(store.store_id)}
+                            style={{
+                              backgroundColor: '#6B7280',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            title="Ver tienda pública"
+                          >
+                            👁️ Ver Tienda
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleEditMenu(store.store_id)}
+                            style={{
+                              backgroundColor: '#3B82F6',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            title="Administrar menú de productos"
+                          >
+                            📋 Editar Menú
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleEditStore(store)}
+                            style={{
+                              backgroundColor: '#059669',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            title="Configurar información de la tienda"
+                          >
+                            ⚙️ Configurar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
