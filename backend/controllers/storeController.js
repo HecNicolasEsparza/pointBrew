@@ -395,7 +395,40 @@ const storeController = {
         error: error.message
       });
     }
-  }
+  },
+
+  // Get stores where current user works as employee
+  getWorkerStores: async (req, res) => {
+    try {
+      const userId = req.user.user_id;
+      const pool = getPool();
+      
+      const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query(`
+          SELECT s.store_id, s.name, s.description, s.image_url, s.created_at, s.updated_at,
+                 b.name as branch_name, b.address as branch_address, b.branch_id,
+                 se.position, se.is_manager
+          FROM Store s
+          INNER JOIN Branch b ON s.branch_id = b.branch_id
+          INNER JOIN StoreEmployee se ON s.store_id = se.store_id
+          WHERE se.user_id = @userId AND se.is_active = 1
+          ORDER BY se.is_manager DESC, s.created_at DESC
+        `);
+      
+      res.json({
+        success: true,
+        data: result.recordset
+      });
+    } catch (error) {
+      console.error('Error getting worker stores:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error retrieving worker stores',
+        error: error.message
+      });
+    }
+  },
 };
 
 module.exports = storeController;

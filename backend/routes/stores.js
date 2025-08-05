@@ -3,6 +3,9 @@ const router = express.Router();
 const storeController = require('../controllers/storeController');
 const { authenticateToken } = require('../middleware/auth');
 
+// GET /api/stores/worker-stores - Get stores where current user works
+router.get('/worker-stores', authenticateToken, storeController.getWorkerStores);
+
 // GET /stores - Get all stores
 router.get('/', storeController.getAllStores);
 

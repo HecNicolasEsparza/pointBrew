@@ -52,13 +52,53 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
       router.push('/auth/login');
       return;
     }
-    if (user && user.role_name !== 'Admin') {
+    
+    // Permitir acceso tanto a Admin como a Employee
+    if (user && user.role_name !== 'Admin' && user.role_name !== 'Employee') {
       router.push('/');
       return;
     }
-    fetchCategories();
-    fetchProducts();
+    
+    // Si es empleado, verificar que tenga acceso a esta tienda
+    if (user && user.role_name === 'Employee') {
+      verifyEmployeeAccess();
+    } else {
+      // Si es Admin, cargar directamente
+      fetchCategories();
+      fetchProducts();
+    }
   }, [isAuthenticated, user]);
+
+  // Función para verificar acceso de empleado
+  const verifyEmployeeAccess = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/stores/worker-stores', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.data.success) {
+        const workerStores = response.data.data || [];
+        const hasAccess = workerStores.some((store: any) => store.store_id === parseInt(storeId));
+        
+        if (!hasAccess) {
+          router.push('/');
+          return;
+        }
+        
+        // Si tiene acceso, cargar los datos
+        fetchCategories();
+        fetchProducts();
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Error verifying employee access:', error);
+      router.push('/');
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -394,7 +434,7 @@ export default function MenuEditPage({ params }: { params: Promise<{ storeId: st
     }
   };
 
-  if (!isAuthenticated || (user && user.role_name !== 'Admin')) {
+  if (!isAuthenticated || (user && user.role_name !== 'Admin' && user.role_name !== 'Employee')) {
     return null;
   }
 

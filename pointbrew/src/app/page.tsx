@@ -63,14 +63,15 @@ export default function Home() {
             <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
               Ofertas
             </div>
-            {isAuthenticated && user?.role_name === 'Admin' ? (
+            {isAuthenticated && user?.role_name === 'Admin' && (
               <Link href="/store/manage-stores" className="nav-item">
-                Administrar Trabajo
+                Administrar mis tiendas
               </Link>
-            ) : (
-              <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
-                Administrar Trabajo
-              </div>
+            )}
+            {isAuthenticated && user?.role_name === 'Employee' && (
+              <Link href="/store/manage-worker-stores" className="nav-item">
+                Administrar tiendas en las que trabajo
+              </Link>
             )}
             {isAuthenticated && user?.role_name !== 'Employee' ? (
               <Link href="/store/register-store" className="nav-item">
