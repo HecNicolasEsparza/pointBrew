@@ -1,46 +1,104 @@
 "use client";
 import './menu.css';
 import { FaShoppingCart } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { fetchProductsByStore } from '../../../contexts/services/getProductsService';
 import { Product } from '../../../contexts/models/products';
 import { addToCart } from '../../../contexts/services/cartService';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import MockupLayout from '@/components/MockupLayout';
+import axios from 'axios';
 
+interface Store {
+    store_id: number;
+    name: string;
+    description: string;
+    image_url?: string;
+    branch_name: string;
+    branch_address: string;
+}
 
-export default function Menu() {
+export default function Menu({ params }: { params: Promise<{ idTienda: string }> }) {
+    const resolvedParams = use(params);
+    const storeId = parseInt(resolvedParams.idTienda);
+    
     const [products, setProducts] = useState<Product[]>([]);
     const [counts, setCounts] = useState<number[]>([]);
+    const [store, setStore] = useState<Store | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string>('');
     const { user } = useAuth();
+    const router = useRouter();
 
     useEffect(() => {
-        fetchProductsByStore(1)
-            .then((res) => {
-                if (res.success) {
-                    setProducts(res.data);
-                    setCounts(Array(res.data.length).fill(1)); // una cantidad por producto
+        if (storeId && !isNaN(storeId)) {
+            setLoading(true);
+            // Cargar información de la tienda y productos
+            Promise.all([
+                fetchStoreDetails(),
+                fetchProductsByStore(storeId)
+            ])
+            .then(([storeRes, productsRes]) => {
+                if (productsRes.success) {
+                    setProducts(productsRes.data);
+                    setCounts(Array(productsRes.data.length).fill(1));
+                } else {
+                    setError('No se pudieron cargar los productos');
                 }
             })
             .catch((err) => {
-                console.error("Error al cargar productos:", err);
+                console.error("Error al cargar datos:", err);
+                setError('Error al conectar con el servidor');
+            })
+            .finally(() => {
+                setLoading(false);
             });
-    }, []);
+        } else {
+            setError('ID de tienda inválido');
+            setLoading(false);
+        }
+    }, [storeId]);
+
+    const fetchStoreDetails = async () => {
+        try {
+            const response = await axios.get(`http://localhost:3001/api/stores/${storeId}`);
+            if (response.data.success) {
+                setStore(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching store details:', error);
+        }
+    };
+
+    const getStoreImage = (): string => {
+        if (store?.image_url && store.image_url.trim() !== '') {
+            return store.image_url;
+        }
+        return "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
+    };
 
     const handleAddToCart = async (productId: number, quantity: number) => {
         const userId = user?.user_id;
-        
 
         if (!userId) {
             console.error("Usuario no autenticado.");
+            alert("Debes iniciar sesión para agregar productos al carrito");
+            return;
+        }
+
+        if (quantity === 0) {
+            alert("La cantidad debe ser mayor a 0");
             return;
         }
 
         try {
             await addToCart({ user_id: userId, product_id: productId, quantity });
             console.log("Producto agregado al carrito");
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            alert("Producto agregado al carrito exitosamente");
         } catch (err) {
             console.error("No se pudo agregar al carrito");
+            alert("Error al agregar producto al carrito");
         }
     };
 
@@ -60,45 +118,113 @@ export default function Menu() {
         });
     };
 
-    return (
-        <div className="auth-container">
-            <div className="menu-container">
-                <div className="menu-image-side">
-                    <img src="/img/placeHolderFood.jpg" alt="Imagen lateral" />
+    if (loading) {
+        return (
+            <MockupLayout title="Cargando Menú - Point Brew" showAuthButtons={true}>
+                <div className="menu-container">
+                    <div className="loading-container">
+                        <div className="loading-spinner"></div>
+                        <p>Cargando menú...</p>
+                    </div>
                 </div>
+            </MockupLayout>
+        );
+    }
 
-                <div className="menu-vertical-box">
-                    <h3 className="menu-title">Menú</h3>
+    if (error) {
+        return (
+            <MockupLayout title="Error - Point Brew" showAuthButtons={true}>
+                <div className="menu-container">
+                    <div className="error-container">
+                        <h3>Error</h3>
+                        <p>{error}</p>
+                        <button onClick={() => router.push('/')} className="back-btn">
+                            Volver al inicio
+                        </button>
+                    </div>
+                </div>
+            </MockupLayout>
+        );
+    }
 
-                    {products.map((product, i) => (
-                        <div className="reduced-box" key={product.product_id}>
-                            <div className="menu-top-image">
-                                <img
-                                    src={product.image_url || "/img/placeHolderFood.jpg"}
-                                    alt={product.name}
-                                />
-                            </div>
+    return (
+        <MockupLayout title={`Menú ${store?.name || 'Tienda'} - Point Brew`} showAuthButtons={true}>
+            <div className="menu-container-kfc">
+                <div className="menu-layout">
+                    {/* Imagen grande de la tienda a la izquierda */}
+                    <div className="store-image-section">
+                        <img 
+                            src={getStoreImage()} 
+                            alt={store?.name || 'Tienda'}
+                            className="store-hero-image"
+                            onError={(e) => {
+                                e.currentTarget.src = "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
+                            }}
+                        />
+                    </div>
 
-                            <div className="menu-description">
-                                <p>{product.name}</p>
-                                <p>${product.price}</p>
-                            </div>
-
-                            <div className="menu-actions">
-                                <button className="cart-btn" onClick={() => handleAddToCart(product.product_id, counts[i])}>
-                                    <FaShoppingCart />
-                                </button>
-
-                                <div className="counter">
-                                    <button onClick={() => handleDecrement(i)}>-</button>
-                                    <span>{counts[i]}</span>
-                                    <button onClick={() => handleIncrement(i)}>+</button>
-                                </div>
-                            </div>
+                    {/* Sección del menú a la derecha */}
+                    <div className="menu-section">
+                        <div className="menu-header-kfc">
+                            <h1 className="menu-title-kfc">Menú</h1>
                         </div>
-                    ))}
+
+                        {products.length === 0 ? (
+                            <div className="no-products-kfc">
+                                <p>No hay productos disponibles en esta tienda.</p>
+                            </div>
+                        ) : (
+                            <div className="products-grid-kfc">
+                                {products.map((product, i) => (
+                                    <div className="product-card-kfc" key={product.product_id}>
+                                        <div className="product-image-kfc">
+                                            <img
+                                                src={product.image_url || "/img/placeHolderFood.jpg"}
+                                                alt={product.name}
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "/img/placeHolderFood.jpg";
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="product-info-kfc">
+                                            <h4 className="product-name-kfc">{product.name}</h4>
+                                            <p className="product-price-kfc">${product.price}</p>
+                                        </div>
+
+                                        <div className="product-actions-kfc">
+                                            <button 
+                                                className="cart-btn-kfc" 
+                                                onClick={() => handleAddToCart(product.product_id, counts[i])}
+                                                disabled={counts[i] === 0 || !user}
+                                                title={!user ? "Inicia sesión para agregar al carrito" : "Agregar al carrito"}
+                                            >
+                                                <FaShoppingCart />
+                                            </button>
+
+                                            <div className="quantity-controls-kfc">
+                                                <button 
+                                                    className="quantity-btn-kfc"
+                                                    onClick={() => handleDecrement(i)}
+                                                >
+                                                    -
+                                                </button>
+                                                <span className="quantity-display-kfc">{counts[i]}</span>
+                                                <button 
+                                                    className="quantity-btn-kfc"
+                                                    onClick={() => handleIncrement(i)}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        </MockupLayout>
     );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import './page.css'; // ✅ Agregar esta línea
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
