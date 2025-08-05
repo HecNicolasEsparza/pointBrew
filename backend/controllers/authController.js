@@ -106,6 +106,7 @@ const authController = {
       }
 
       const { email, password } = req.body;
+      console.log('Login attempt for email:', email);
       
       const pool = getPool();
       
@@ -119,7 +120,10 @@ const authController = {
           WHERE u.email = @email
         `);
 
+      console.log('User found:', result.recordset.length > 0 ? 'Yes' : 'No');
+
       if (result.recordset.length === 0) {
+        console.log('User not found for email:', email);
         return res.status(401).json({
           success: false,
           message: 'Credenciales inválidas'
@@ -127,10 +131,14 @@ const authController = {
       }
 
       const user = result.recordset[0];
+      console.log('Found user:', user.email, 'with role:', user.role_name);
 
       // Check password
       const validPassword = await bcrypt.compare(password, user.password);
+      console.log('Password validation result:', validPassword);
+      
       if (!validPassword) {
+        console.log('Invalid password for user:', email);
         return res.status(401).json({
           success: false,
           message: 'Credenciales inválidas'

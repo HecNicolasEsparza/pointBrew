@@ -19,6 +19,7 @@
     "jade": "~1.11.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "~1.9.1",
+    "msnodesqlv8": "^5.1.1",
     "mssql": "^10.0.2",
     "multer": "^2.0.2"
   },
