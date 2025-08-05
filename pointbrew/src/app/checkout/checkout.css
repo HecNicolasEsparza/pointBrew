@@ -1,0 +1,289 @@
+.checkout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 2rem 2rem;
+  min-height: 100vh;
+}
+
+.checkout-title {
+  text-align: center;
+  color: #8B4513;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+.order-summary {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+}
+
+.order-summary h2 {
+  color: #8B4513;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.order-items {
+  margin-bottom: 1.5rem;
+}
+
+.order-item {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.order-item-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.order-item-details h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.order-item-details p {
+  margin: 0.25rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.item-price {
+  color: #8B4513 !important;
+  font-weight: 600 !important;
+}
+
+.order-total {
+  border-top: 2px solid #8B4513;
+  padding-top: 1rem;
+  text-align: right;
+}
+
+.order-total h3 {
+  margin: 0;
+  color: #8B4513;
+  font-size: 1.5rem;
+}
+
+.checkout-form {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-form h2 {
+  color: #8B4513;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #8B4513;
+}
+
+.payment-methods {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.5rem;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+  border-color: #8B4513;
+}
+
+.payment-method.selected {
+  border-color: #8B4513;
+  background-color: #f8f5f1;
+}
+
+.payment-method span {
+  font-weight: 600;
+  color: #333;
+}
+
+.checkout-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.back-to-cart-btn, .place-order-btn {
+  flex: 1;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-to-cart-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.back-to-cart-btn:hover:not(:disabled) {
+  background-color: #545b62;
+}
+
+.place-order-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.place-order-btn:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.back-to-cart-btn:disabled, .place-order-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.empty-checkout {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-checkout h2 {
+  color: #8B4513;
+  margin-bottom: 1rem;
+}
+
+.continue-shopping-btn {
+  background-color: #8B4513;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+}
+
+.continue-shopping-btn:hover {
+  background-color: #654321;
+}
+
+/* Loading Payment Methods */
+.loading-payment-methods {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  border: 2px dashed #e0e0e0;
+}
+
+/* Disabled State for Payment Method */
+.payment-method:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.place-order-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Loading Animation */
+.loading-payment-methods::after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #8B4513;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 0.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .checkout-container {
+    padding: 80px 1rem 1rem;
+  }
+  
+  .checkout-actions {
+    flex-direction: column;
+  }
+  
+  .order-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .order-item-image {
+    align-self: center;
+  }
+}

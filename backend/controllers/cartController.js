@@ -171,82 +171,115 @@ const cartController = {
 
   // Checkout - Convertir carrito en ticket
   checkout: async (req, res) => {
-    const transaction = new sql.Transaction();
+    let transaction;
     
     try {
-      const { userId, storeId } = req.body;
-      const pool = getPool();
-      
-      await transaction.begin();
-
-      // Obtener items del carrito
-      const cartItems = await transaction.request()
-        .input('userId', sql.Int, userId)
-        .query(`
-          SELECT c.product_id, c.quantity, p.price
-          FROM Cart c
-          INNER JOIN Product p ON c.product_id = p.product_id
-          WHERE c.user_id = @userId
-        `);
-
-      if (cartItems.recordset.length === 0) {
-        throw new Error('Cart is empty');
-      }
-
-      // Calcular total
-      const totalAmount = cartItems.recordset.reduce((sum, item) => 
-        sum + (item.quantity * item.price), 0
-      );
-
-      // Crear ticket
-      const ticketResult = await transaction.request()
-        .input('userId', sql.Int, userId)
-        .input('storeId', sql.Int, storeId)
-        .input('totalAmount', sql.Decimal(10, 2), totalAmount)
-        .query(`
-          INSERT INTO Ticket (user_id, store_id, total_amount)
-          OUTPUT INSERTED.ticket_id
-          VALUES (@userId, @storeId, @totalAmount)
-        `);
-
-      const ticketId = ticketResult.recordset[0].ticket_id;
-
-      // Agregar productos al ticket
-      for (const item of cartItems.recordset) {
-        await transaction.request()
-          .input('ticketId', sql.Int, ticketId)
-          .input('productId', sql.Int, item.product_id)
-          .input('quantity', sql.Int, item.quantity)
-          .input('unitPrice', sql.Decimal(10, 2), item.price)
-          .query(`
-            INSERT INTO TicketProduct (ticket_id, product_id, quantity, unit_price)
-            VALUES (@ticketId, @productId, @quantity, @unitPrice)
-          `);
-      }
-
-      // Limpiar carrito
-      await transaction.request()
-        .input('userId', sql.Int, userId)
-        .query('DELETE FROM Cart WHERE user_id = @userId');
-
-      await transaction.commit();
-
-      res.json({
-        success: true,
-        message: 'Checkout completed successfully',
-        data: {
-          ticketId: ticketId,
-          totalAmount: totalAmount
+        const { userId, storeId, paymentMethodId, customerName, customerEmail } = req.body;
+        
+        if (!userId || !storeId || !paymentMethodId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Datos inválidos'
+            });
         }
-      });
+        
+        const pool = getPool();
+        transaction = new sql.Transaction(pool);
+        await transaction.begin();
+        
+        // Obtener items del carrito
+        const cartItems = await transaction.request()
+            .input('userId', sql.Int, userId)
+            .query(`
+                SELECT 
+                    c.product_id,
+                    c.quantity,
+                    p.price,
+                    (p.price * c.quantity) as subtotal
+                FROM Cart c
+                INNER JOIN Product p ON c.product_id = p.product_id
+                WHERE c.user_id = @userId
+            `);
+        
+        if (cartItems.recordset.length === 0) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success: false,
+                message: 'El carrito está vacío'
+            });
+        }
+        
+        // Calcular total
+        const total = cartItems.recordset.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
+        
+        // Crear ticket
+        const ticketResult = await transaction.request()
+            .input('userId', sql.Int, userId)
+            .input('storeId', sql.Int, storeId)
+            .input('total', sql.Decimal(10, 2), total)
+            .query(`
+                INSERT INTO Ticket (user_id, store_id, total_amount, ticket_date, created_at, updated_at)
+                OUTPUT INSERTED.ticket_id
+                VALUES (@userId, @storeId, @total, GETDATE(), GETDATE(), GETDATE())
+            `);
+        
+        const ticketId = ticketResult.recordset[0].ticket_id;
+        
+        // Crear ticket products
+        for (const item of cartItems.recordset) {
+            await transaction.request()
+                .input('ticketId', sql.Int, ticketId)
+                .input('productId', sql.Int, item.product_id)
+                .input('quantity', sql.Int, item.quantity)
+                .input('unitPrice', sql.Decimal(10, 2), item.price)
+                .query(`
+                    INSERT INTO TicketProduct (ticket_id, product_id, quantity, unit_price)
+                    VALUES (@ticketId, @productId, @quantity, @unitPrice)
+                `);
+        }
+        
+        // Crear registro de pago
+        await transaction.request()
+            .input('ticketId', sql.Int, ticketId)
+            .input('methodId', sql.Int, paymentMethodId)
+            .input('statusId', sql.Int, 1) // 1 = Pending
+            .input('amount', sql.Decimal(10, 2), total)
+            .query(`
+                INSERT INTO Payment (ticket_id, method_id, status_id, amount, created_at)
+                VALUES (@ticketId, @methodId, @statusId, @amount, GETDATE())
+            `);
+        
+        // Limpiar carrito
+        await transaction.request()
+            .input('userId', sql.Int, userId)
+            .query(`DELETE FROM Cart WHERE user_id = @userId`);
+        
+        await transaction.commit();
+        
+        res.json({
+            success: true,
+            message: 'Pedido procesado exitosamente',
+            data: {
+                ticketId: ticketId,
+                total: total.toFixed(2),
+                paymentMethodId: paymentMethodId
+            }
+        });
+        
     } catch (error) {
-      await transaction.rollback();
-      console.error('Error during checkout:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error during checkout',
-        error: error.message
-      });
+        if (transaction) {
+            try {
+                await transaction.rollback();
+            } catch (rollbackError) {
+                console.error('Error during rollback:', rollbackError);
+            }
+        }
+        console.error('Error during checkout:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al procesar el pedido',
+            error: error.message
+        });
     }
   }
 };

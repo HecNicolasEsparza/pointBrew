@@ -131,7 +131,8 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
             router.push('/auth/login');
             return;
         }
-        router.push('/Cart');
+        // Cambiar la ruta a checkout en lugar de Cart
+        router.push('/checkout');
     };
 
     if (loading) {
@@ -241,12 +242,12 @@ export default function Menu({ params }: { params: Promise<{ idTienda: string }>
                     </div>
                 </div>
 
-                {/* Botón flotante del carrito */}
+                {/* Botón flotante del carrito - ahora va directo al checkout */}
                 {user && cartCount > 0 && (
                     <button 
                         className="floating-cart-btn"
                         onClick={handleGoToCart}
-                        title="Ver carrito"
+                        title="Proceder al pago"
                     >
                         <FaShoppingCart />
                         <span className="cart-count-badge">{cartCount}</span>
