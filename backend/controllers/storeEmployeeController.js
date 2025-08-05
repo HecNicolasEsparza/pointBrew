@@ -133,7 +133,7 @@ const storeEmployeeController = {
         .input('storeId', sql.Int, storeId)
         .query(`
           SELECT id FROM StoreEmployee 
-          WHERE user_id = @userId AND store_id = @storeId
+          WHERE user_id = @userId AND store_id = @storeId AND is_active = 1
         `);
 
       if (existingAssignment.recordset.length > 0) {
@@ -143,15 +143,37 @@ const storeEmployeeController = {
         });
       }
 
-      // Add employee to store
-      await pool.request()
-        .input('storeId', sql.Int, storeId)
+      // If there's an inactive assignment, reactivate it instead of creating new
+      const inactiveAssignment = await pool.request()
         .input('userId', sql.Int, userId)
-        .input('position', sql.VarChar, position || 'Empleado')
+        .input('storeId', sql.Int, storeId)
         .query(`
-          INSERT INTO StoreEmployee (store_id, user_id, position, hire_date, is_active, is_manager)
-          VALUES (@storeId, @userId, @position, GETDATE(), 1, 0)
+          SELECT id FROM StoreEmployee 
+          WHERE user_id = @userId AND store_id = @storeId AND is_active = 0
         `);
+
+      if (inactiveAssignment.recordset.length > 0) {
+        // Reactivate existing assignment
+        await pool.request()
+          .input('storeId', sql.Int, storeId)
+          .input('userId', sql.Int, userId)
+          .input('position', sql.VarChar, position || 'Empleado')
+          .query(`
+            UPDATE StoreEmployee 
+            SET is_active = 1, position = @position, hire_date = GETDATE(), updated_at = GETDATE()
+            WHERE store_id = @storeId AND user_id = @userId
+          `);
+      } else {
+        // Add new employee to store
+        await pool.request()
+          .input('storeId', sql.Int, storeId)
+          .input('userId', sql.Int, userId)
+          .input('position', sql.VarChar, position || 'Empleado')
+          .query(`
+            INSERT INTO StoreEmployee (store_id, user_id, position, hire_date, is_active, is_manager)
+            VALUES (@storeId, @userId, @position, GETDATE(), 1, 0)
+          `);
+      }
 
       // Get the added employee data
       const newEmployee = await pool.request()
