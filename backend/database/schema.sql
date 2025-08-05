@@ -121,6 +121,18 @@ CREATE TABLE Turn (
   desired_pickup DATETIME     NULL
 );
 
+CREATE TABLE Cart (
+  cart_id       INT           PRIMARY KEY IDENTITY,
+  user_id       INT           NOT NULL
+    REFERENCES [User](user_id),
+  product_id    INT           NOT NULL
+    REFERENCES Product(product_id),
+  quantity      INT           NOT NULL DEFAULT 1,
+  added_at      DATETIME      DEFAULT GETDATE(),
+  updated_at    DATETIME      DEFAULT GETDATE(),
+  UNIQUE(user_id, product_id)  -- Un usuario no puede tener el mismo producto duplicado
+);
+
 -- Insert initial data
 INSERT INTO Role (role_name) VALUES ('Admin'), ('Customer'), ('Employee');
 INSERT INTO PaymentMethod (method_name) VALUES ('Cash'), ('Credit Card'), ('Debit Card'), ('Mobile Payment');
