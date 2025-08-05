@@ -237,6 +237,23 @@ export default function ManageWorkerStores() {
                           >
                             📋 Editar Menú
                           </button>
+
+                          <button 
+                            onClick={() => router.push(`/store/manage-customers-turns?storeId=${store.store_id}`)}
+                            style={{
+                              backgroundColor: '#10B981',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            title="Gestionar turnos de clientes"
+                          >
+                            🎯 Gestionar Turnos
+                          </button>
                         </div>
                       </div>
                     </div>
