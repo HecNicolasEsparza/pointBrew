@@ -92,17 +92,7 @@ export default function ChoosePaymentMethod() {
                                                 />
                                             </td>
                                             <td>
-                                                <img
-                                                    src={
-                                                        method.card_brand?.toLowerCase() === 'visa'
-                                                            ? '/iconos/visa.png'
-                                                            : method.card_brand?.toLowerCase() === 'mastercard'
-                                                            ? '/iconos/mastercard.png'
-                                                            : '/iconos/default-card.png'
-                                                    }
-                                                    alt={method.card_brand || 'Método de pago'}
-                                                    style={{ width: '40px', height: 'auto' }}
-                                                />
+                                                
                                             </td>
                                             <td>
                                                 {'**** **** **** ' + (method.card_number_last4 || '1234')}

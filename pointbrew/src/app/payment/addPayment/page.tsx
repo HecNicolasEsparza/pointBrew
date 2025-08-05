@@ -26,14 +26,13 @@ export default function AddPaymentMethod() {
       return;
     }
 
-    const last4 = cardNumber.replace(/\s/g, '')
     const expiry = `${expiryMonth.padStart(2, '0')}/${expiryYear}`;
 
     const paymentData = {
       user_id: user.user_id,
       method_id: 1,
       card_holder_name: cardHolder,
-      card_number_last4: last4,
+      card_number: cardNumber.replace(/\s/g, ''),
       card_expiry: expiry,
       card_brand: 'Visa',
       is_default: true,
