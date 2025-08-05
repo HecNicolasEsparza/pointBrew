@@ -128,8 +128,10 @@ CREATE TABLE StoreEmployee (
     REFERENCES Store(store_id),
   user_id         INT           NOT NULL
     REFERENCES [User](user_id),
+  position        VARCHAR(50)   NULL,
   hire_date       DATE          NOT NULL DEFAULT GETDATE(),
   is_active       BIT           NOT NULL DEFAULT 1,
+  is_manager      BIT           NOT NULL DEFAULT 0,
   created_at      DATETIME      DEFAULT GETDATE(),
   updated_at      DATETIME      DEFAULT GETDATE(),
   UNIQUE(store_id, user_id)  -- Un empleado no puede estar duplicado en la misma tienda
