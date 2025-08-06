@@ -7,6 +7,9 @@ import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import { FaCreditCard, FaMoneyBillWave, FaMobile, FaUniversity } from 'react-icons/fa';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/contexts/redux/store';
+
 
 interface PaymentMethod {
   method_id: number;
@@ -23,7 +26,11 @@ export default function CheckoutPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const { user, isAuthenticated } = useAuth();
   const { cartItems, cartTotal, clearCart } = useCart();
+  const paymentId = useSelector((state: RootState) => state.payment.paymentId);
   const router = useRouter();
+
+  console.log("Redux paymentId:", paymentId);
+
 
   // Mapeo de iconos para métodos de pago
   const getPaymentIcon = (methodName: string): React.ReactElement => {
@@ -50,7 +57,7 @@ export default function CheckoutPage() {
       router.push('/auth/login');
       return;
     }
-    
+
     if (cartItems.length === 0) {
       router.push('/');
       return;
@@ -70,7 +77,7 @@ export default function CheckoutPage() {
     try {
       setLoadingPaymentMethods(true);
       const response = await axios.get('http://localhost:3001/api/payment-methods');
-      
+
       if (response.data.success) {
         const methodsWithIcons = response.data.data.map((method: any) => ({
           method_id: method.method_id,
@@ -78,7 +85,7 @@ export default function CheckoutPage() {
           icon: getPaymentIcon(method.method_name)
         }));
         setPaymentMethods(methodsWithIcons);
-        
+
         // Seleccionar el primer método por defecto
         if (methodsWithIcons.length > 0) {
           setSelectedPaymentMethod(methodsWithIcons[0].method_id);
@@ -112,7 +119,7 @@ export default function CheckoutPage() {
 
     try {
       setLoading(true);
-      
+
       const response = await axios.post('http://localhost:3001/api/cart/checkout', {
         userId: user?.user_id,
         storeId: 1, // Esto debería ser dinámico según los productos del carrito
@@ -125,7 +132,7 @@ export default function CheckoutPage() {
       if (response.data.success) {
         // Limpiar carrito después del checkout exitoso
         await clearCart();
-        
+
         // Mostrar mensaje de éxito y redirigir
         alert(`¡Pedido realizado exitosamente! Tu número de orden es: ${response.data.data.ticketId}`);
         router.push('/orders');
@@ -171,7 +178,7 @@ export default function CheckoutPage() {
     <MockupLayout title="Finalizar Pedido - Point Brew" showAuthButtons={true}>
       <div className="checkout-container">
         <h1 className="checkout-title">Finalizar Pedido</h1>
-        
+
         <div className="checkout-layout">
           {/* Resumen del pedido */}
           <div className="order-summary">
@@ -179,8 +186,8 @@ export default function CheckoutPage() {
             <div className="order-items">
               {cartItems.map((item) => (
                 <div key={item.cart_id} className="order-item">
-                  <img 
-                    src={item.image_url || "/img/placeHolderFood.jpg"} 
+                  <img
+                    src={item.image_url || "/img/placeHolderFood.jpg"}
                     alt={item.product_name}
                     className="order-item-image"
                     onError={(e) => {
@@ -203,7 +210,7 @@ export default function CheckoutPage() {
           {/* Formulario de checkout */}
           <div className="checkout-form">
             <h2>Información del Cliente</h2>
-            
+
             <div className="form-group">
               <label htmlFor="customerName">Nombre Completo</label>
               <input
@@ -236,30 +243,40 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <div className="payment-methods">
-                  {paymentMethods.map((method) => (
+                  {paymentMethods.map((method, index) => (
                     <button
                       key={method.method_id}
                       type="button"
                       className={`payment-method ${selectedPaymentMethod === method.method_id ? 'selected' : ''}`}
-                      onClick={() => setSelectedPaymentMethod(method.method_id)}
+                      onClick={() => {
+                        if (method.method_id === 2 && !paymentId) {
+                          alert("Debes elegir un método de tarjeta válido primero");
+                          router.push("/choosePaymentMethod");
+                          return;
+                        }
+
+                        setSelectedPaymentMethod(method.method_id);
+                      }}
+
                     >
                       {method.icon}
                       <span>{method.method_name}</span>
                     </button>
                   ))}
+
                 </div>
               )}
             </div>
 
             <div className="checkout-actions">
-              <button 
-                onClick={() => router.push('/Cart')} 
+              <button
+                onClick={() => router.push('/Cart')}
                 className="back-to-cart-btn"
                 disabled={loading}
               >
                 Volver al Carrito
               </button>
-              <button 
+              <button
                 onClick={handleCheckout}
                 className="place-order-btn"
                 disabled={loading || loadingPaymentMethods || !selectedPaymentMethod}

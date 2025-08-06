@@ -56,7 +56,7 @@ export default function ChoosePaymentMethod() {
 
         // Aquí puedes continuar con navegación o mostrar mensaje
         console.log('Método de pago guardado en redux:', selectedPaymentId);
-        router.push('/');
+        router.push('/checkout');
     };
 
     return (
@@ -107,7 +107,7 @@ export default function ChoosePaymentMethod() {
 
                     <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                         <button className="confirm-button" onClick={handleConfirm}>Confirmar</button>
-                        <button className="cancel-button"  onClick={() => router.push('/')}>Regresar</button>
+                        <button className="cancel-button"  onClick={() => router.push('/checkout')}>Regresar</button>
                     </div>
                 </div>
             </div>
