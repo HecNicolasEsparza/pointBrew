@@ -144,4 +144,195 @@ router.get('/:ticketId', async (req, res) => {
     }
 });
 
+// GET - Obtener órdenes de un usuario específico
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const pool = getPool();
+        
+        // Obtener todas las órdenes del usuario con información detallada
+        const result = await pool.request()
+            .input('userId', sql.Int, userId)
+            .query(`
+                SELECT 
+                    t.ticket_id,
+                    t.total_amount,
+                    t.customer_name,
+                    t.customer_email,
+                    t.status,
+                    t.ticket_date,
+                    t.created_at,
+                    t.updated_at,
+                    s.name as store_name,
+                    s.store_id,
+                    STRING_AGG(CONCAT(p.name, ' (', tp.quantity, ')'), ', ') as products_summary,
+                    COUNT(tp.product_id) as total_items
+                FROM Ticket t
+                INNER JOIN Store s ON t.store_id = s.store_id
+                LEFT JOIN TicketProduct tp ON t.ticket_id = tp.ticket_id
+                LEFT JOIN Product p ON tp.product_id = p.product_id
+                WHERE t.user_id = @userId
+                GROUP BY t.ticket_id, t.total_amount, t.customer_name, t.customer_email, 
+                         t.status, t.ticket_date, t.created_at, t.updated_at, 
+                         s.name, s.store_id
+                ORDER BY t.created_at DESC
+            `);
+        
+        res.json({
+            success: true,
+            data: result.recordset
+        });
+        
+    } catch (error) {
+        console.error('Error fetching user orders:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener órdenes del usuario',
+            error: error.message
+        });
+    }
+});
+
+// GET - Obtener órdenes de una tienda específica (CORREGIDO)
+router.get('/store/:storeId', async (req, res) => {
+    try {
+        const { storeId } = req.params;
+        const pool = getPool();
+        
+        // Obtener todas las órdenes/tickets de una tienda con información de productos
+        const result = await pool.request()
+            .input('storeId', sql.Int, storeId)
+            .query(`
+                SELECT 
+                    CONCAT(tp.ticket_id, '_', tp.product_id) as order_id,
+                    t.ticket_id,
+                    p.name as product_name,
+                    p.image_url as product_image,
+                    tp.quantity,
+                    COALESCE(t.status, 'pending') as status,
+                    u.full_name as customer_name,
+                    t.created_at,
+                    t.updated_at,
+                    t.store_id,
+                    s.name as store_name
+                FROM TicketProduct tp
+                INNER JOIN Ticket t ON tp.ticket_id = t.ticket_id
+                INNER JOIN Product p ON tp.product_id = p.product_id
+                INNER JOIN Store s ON t.store_id = s.store_id
+                LEFT JOIN [User] u ON t.user_id = u.user_id
+                WHERE t.store_id = @storeId
+                ORDER BY t.created_at DESC
+            `);
+        
+        res.json({
+            success: true,
+            data: result.recordset
+        });
+        
+    } catch (error) {
+        console.error('Error fetching store orders:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener órdenes de la tienda',
+            error: error.message
+        });
+    }
+});
+
+// PATCH - Actualizar estado de una orden
+router.patch('/:orderId/status', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+        
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: 'Estado es requerido'
+            });
+        }
+        
+        // Validar que el estado sea válido
+        const validStatuses = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
+        if (!validStatuses.includes(status.toLowerCase())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Estado inválido'
+            });
+        }
+        
+        const pool = getPool();
+        
+        // Extraer ticket_id del order_id compuesto (formato: "ticketId_productId")
+        const ticketId = orderId.includes('_') ? orderId.split('_')[0] : orderId;
+        
+        // Actualizar el estado del ticket
+        const result = await pool.request()
+            .input('ticketId', sql.Int, parseInt(ticketId))
+            .input('status', sql.NVarChar(50), status.toLowerCase())
+            .query(`
+                UPDATE Ticket 
+                SET status = @status, updated_at = GETDATE() 
+                WHERE ticket_id = @ticketId
+            `);
+        
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Orden no encontrada'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Estado actualizado correctamente',
+            data: { orderId, ticketId: parseInt(ticketId), status: status.toLowerCase() }
+        });
+        
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al actualizar estado de la orden',
+            error: error.message
+        });
+    }
+});
+
+// Endpoint temporal para debug - obtener estructura de tickets
+router.get('/debug/store/:storeId', async (req, res) => {
+    try {
+        const { storeId } = req.params;
+        const pool = getPool();
+        
+        const result = await pool.request()
+            .input('storeId', sql.Int, storeId)
+            .query(`
+                SELECT TOP 5 
+                    t.*,
+                    u.full_name,
+                    s.name as store_name
+                FROM Ticket t
+                LEFT JOIN [User] u ON t.user_id = u.user_id
+                LEFT JOIN Store s ON t.store_id = s.store_id
+                WHERE t.store_id = @storeId
+                ORDER BY t.created_at DESC
+            `);
+        
+        res.json({
+            success: true,
+            data: result.recordset,
+            columns: result.recordset.length > 0 ? Object.keys(result.recordset[0]) : []
+        });
+        
+    } catch (error) {
+        console.error('Error in debug endpoint:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error en debug',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

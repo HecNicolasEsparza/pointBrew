@@ -174,7 +174,16 @@ const cartController = {
     let transaction;
     
     try {
-        const { userId, storeId, paymentMethodId, customerName, customerEmail } = req.body;
+        const { 
+            userId, 
+            storeId, 
+            paymentMethodId, 
+            customerName, 
+            customerEmail,
+            discountAmount = 0,
+            appliedCoupon = null,
+            finalTotal
+        } = req.body;
         
         if (!userId || !storeId || !paymentMethodId) {
             return res.status(400).json({
@@ -210,17 +219,22 @@ const cartController = {
         }
         
         // Calcular total
-        const total = cartItems.recordset.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
+        const subtotal = cartItems.recordset.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
+        const finalAmount = finalTotal !== undefined ? finalTotal : Math.max(0, subtotal - discountAmount);
         
-        // Crear ticket
+        // Crear ticket con información del cliente y estado inicial
         const ticketResult = await transaction.request()
             .input('userId', sql.Int, userId)
             .input('storeId', sql.Int, storeId)
-            .input('total', sql.Decimal(10, 2), total)
+            .input('subtotal', sql.Decimal(10, 2), subtotal)
+            .input('finalAmount', sql.Decimal(10, 2), finalAmount)
+            .input('customerName', sql.NVarChar(255), customerName || 'Cliente')
+            .input('customerEmail', sql.NVarChar(255), customerEmail || '')
+            .input('status', sql.NVarChar(50), 'pending')
             .query(`
-                INSERT INTO Ticket (user_id, store_id, total_amount, ticket_date, created_at, updated_at)
+                INSERT INTO Ticket (user_id, store_id, total_amount, customer_name, customer_email, status, ticket_date, created_at, updated_at)
                 OUTPUT INSERTED.ticket_id
-                VALUES (@userId, @storeId, @total, GETDATE(), GETDATE(), GETDATE())
+                VALUES (@userId, @storeId, @finalAmount, @customerName, @customerEmail, @status, GETDATE(), GETDATE(), GETDATE())
             `);
         
         const ticketId = ticketResult.recordset[0].ticket_id;
@@ -243,7 +257,7 @@ const cartController = {
             .input('ticketId', sql.Int, ticketId)
             .input('methodId', sql.Int, paymentMethodId)
             .input('statusId', sql.Int, 1) // 1 = Pending
-            .input('amount', sql.Decimal(10, 2), total)
+            .input('amount', sql.Decimal(10, 2), finalAmount)
             .query(`
                 INSERT INTO Payment (ticket_id, method_id, status_id, amount, created_at)
                 VALUES (@ticketId, @methodId, @statusId, @amount, GETDATE())
@@ -261,8 +275,13 @@ const cartController = {
             message: 'Pedido procesado exitosamente',
             data: {
                 ticketId: ticketId,
-                total: total.toFixed(2),
-                paymentMethodId: paymentMethodId
+                subtotal: subtotal.toFixed(2),
+                discountAmount: discountAmount || 0,
+                finalTotal: finalAmount.toFixed(2),
+                appliedCoupon: appliedCoupon,
+                paymentMethodId: paymentMethodId,
+                customerName: customerName,
+                customerEmail: customerEmail
             }
         });
         

@@ -132,28 +132,43 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Por ahora usar storeId = 1, esto se puede mejorar más tarde
+    const storeId = 1;
+
     try {
       setLoading(true);
       setIsProcessing(true);
       
       const response = await axios.post('http://localhost:3001/api/cart/checkout', {
         userId: user?.user_id,
-        storeId: 1, // Esto debería ser dinámico según los productos del carrito
+        storeId: storeId,
         paymentMethodId: selectedPaymentMethod,
         customerName,
         customerEmail,
-        items: cartItems
+        items: cartItems,
+        discountAmount: discountAmount,
+        appliedCoupon: appliedCoupon,
+        finalTotal: calculateFinalTotal()
       });
 
       if (response.data.success) {
         // Limpiar carrito después del checkout exitoso
         await clearCart();
         
-        // Mostrar mensaje de éxito
-        alert(`¡Pedido realizado exitosamente! Tu número de orden es: ${response.data.data.ticketId}`);
+        // Mostrar mensaje de éxito detallado
+        const orderData = response.data.data;
+        alert(`¡Pedido realizado exitosamente!
         
-        // Redirigir a una página de éxito o inicio
-        router.push(`/order-success?orderId=${response.data.data.ticketId}`);
+📋 Número de orden: #${orderData.ticketId}
+👤 Cliente: ${orderData.customerName}
+📧 Email: ${orderData.customerEmail}
+💰 Total pagado: $${orderData.finalTotal}
+${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.discountAmount}` : ''}
+        
+¡Gracias por tu compra!`);
+        
+        // Redirigir a una página de éxito
+        router.push(`/order-success?orderId=${orderData.ticketId}`);
       } else {
         alert('Error al procesar el pedido: ' + response.data.message);
         setIsProcessing(false);
