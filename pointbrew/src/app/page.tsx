@@ -63,6 +63,19 @@ export default function Home() {
             <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
               Ofertas
             </div>
+            
+            {/* Botón para ver pedidos - solo para usuarios autenticados */}
+            {isAuthenticated ? (
+              <Link href="/orders" className="nav-item">
+                Mis Pedidos
+              </Link>
+            ) : (
+              <div className="nav-item disabled">
+                Mis Pedidos
+              </div>
+            )}
+
+            {/* Opciones de administración */}
             {isAuthenticated && user?.role_name === 'Admin' && (
               <Link href="/store/manage-stores" className="nav-item">
                 Administrar mis tiendas
@@ -73,6 +86,8 @@ export default function Home() {
                 Administrar tiendas en las que trabajo
               </Link>
             )}
+            
+            {/* Registro de tienda */}
             {isAuthenticated && user?.role_name !== 'Employee' ? (
               <Link href="/store/register-store" className="nav-item">
                 Registrar una tienda

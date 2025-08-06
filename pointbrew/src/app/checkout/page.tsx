@@ -27,9 +27,10 @@ export default function CheckoutPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false); // Variable faltante añadida
+  
   const { user, isAuthenticated } = useAuth();
-  const { cartItems, cartTotal, clearCart } = useCart();
-  const paymentId = useSelector((state: RootState) => state.payment.paymentId);
+  const { cartItems, cartTotal, clearCart, refreshCart } = useCart();
   const router = useRouter();
 
   console.log("Redux paymentId:", paymentId);
@@ -60,12 +61,7 @@ export default function CheckoutPage() {
       router.push('/auth/login');
       return;
     }
-
-    if (cartItems.length === 0) {
-      router.push('/');
-      return;
-    }
-
+    
     // Pre-llenar datos del usuario
     if (user) {
       setCustomerName(user.full_name || '');
@@ -74,7 +70,19 @@ export default function CheckoutPage() {
 
     // Cargar métodos de pago
     fetchPaymentMethods();
-  }, [isAuthenticated, cartItems, user, router]);
+  }, [isAuthenticated, user, router]);
+
+  // Efecto separado para manejar el carrito vacío
+  useEffect(() => {
+    if (isAuthenticated && !isProcessing && cartItems.length === 0) {
+      // Esperar un poco antes de redirigir para evitar redirecciones inmediatas
+      const timer = setTimeout(() => {
+        router.push('/');
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, cartItems.length, isProcessing, router]);
 
   const fetchPaymentMethods = async () => {
     try {
@@ -115,7 +123,7 @@ export default function CheckoutPage() {
   };
 
   const calculateFinalTotal = () => {
-    const numCartTotal = parseFloat(cartTotal) || 0;
+    const numCartTotal = parseFloat(cartTotal.toString()) || 0; // Conversión mejorada
     return Math.max(0, numCartTotal - discountAmount);
   };
 
@@ -130,31 +138,51 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Por ahora usar storeId = 1, esto se puede mejorar más tarde
+    const storeId = 1;
+
     try {
       setLoading(true);
-
+      setIsProcessing(true);
+      
       const response = await axios.post('http://localhost:3001/api/cart/checkout', {
         userId: user?.user_id,
-        storeId: 1, // Esto debería ser dinámico según los productos del carrito
+        storeId: storeId,
         paymentMethodId: selectedPaymentMethod,
         customerName,
         customerEmail,
-        items: cartItems
+        items: cartItems,
+        discountAmount: discountAmount,
+        appliedCoupon: appliedCoupon,
+        finalTotal: calculateFinalTotal()
       });
 
       if (response.data.success) {
         // Limpiar carrito después del checkout exitoso
         await clearCart();
-
-        // Mostrar mensaje de éxito y redirigir
-        alert(`¡Pedido realizado exitosamente! Tu número de orden es: ${response.data.data.ticketId}`);
-        router.push('/orders');
+        
+        // Mostrar mensaje de éxito detallado
+        const orderData = response.data.data;
+        alert(`¡Pedido realizado exitosamente!
+        
+📋 Número de orden: #${orderData.ticketId}
+👤 Cliente: ${orderData.customerName}
+📧 Email: ${orderData.customerEmail}
+💰 Total pagado: $${orderData.finalTotal}
+${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.discountAmount}` : ''}
+        
+¡Gracias por tu compra!`);
+        
+        // Redirigir a una página de éxito
+        router.push(`/order-success?orderId=${orderData.ticketId}`);
       } else {
         alert('Error al procesar el pedido: ' + response.data.message);
+        setIsProcessing(false);
       }
     } catch (error) {
       console.error('Error durante el checkout:', error);
       alert('Error al procesar el pedido');
+      setIsProcessing(false);
     } finally {
       setLoading(false);
     }
@@ -172,14 +200,15 @@ export default function CheckoutPage() {
     );
   }
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !isProcessing) {
     return (
       <MockupLayout title="Checkout - Point Brew" showAuthButtons={true}>
         <div className="checkout-container">
           <div className="empty-checkout">
             <h2>No hay productos en el carrito</h2>
+            <p>Serás redirigido al inicio en unos segundos...</p>
             <button onClick={() => router.push('/')} className="continue-shopping-btn">
-              Volver a Comprar
+              Ir al Inicio Ahora
             </button>
           </div>
         </div>
@@ -246,6 +275,7 @@ export default function CheckoutPage() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Ingresa tu nombre completo"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -258,12 +288,13 @@ export default function CheckoutPage() {
                 onChange={(e) => setCustomerEmail(e.target.value)}
                 placeholder="Ingresa tu correo electrónico"
                 required
+                disabled={loading}
               />
             </div>
 
             {/* Sección de cupones */}
             <CouponSection 
-              totalAmount={parseFloat(cartTotal) || 0}
+              totalAmount={parseFloat(cartTotal.toString()) || 0}
               userId={user?.user_id || 0}
               onCouponApplied={handleCouponApplied}
             />
@@ -281,16 +312,8 @@ export default function CheckoutPage() {
                       key={method.method_id}
                       type="button"
                       className={`payment-method ${selectedPaymentMethod === method.method_id ? 'selected' : ''}`}
-                      onClick={() => {
-                        if (method.method_id === 2 && !paymentId) {
-                          alert("Debes elegir un método de tarjeta válido primero");
-                          router.push("/choosePaymentMethod");
-                          return;
-                        }
-
-                        setSelectedPaymentMethod(method.method_id);
-                      }}
-
+                      onClick={() => setSelectedPaymentMethod(method.method_id)}
+                      disabled={loading}
                     >
                       {method.icon}
                       <span>{method.method_name}</span>
@@ -302,12 +325,12 @@ export default function CheckoutPage() {
             </div>
 
             <div className="checkout-actions">
-              <button
-                onClick={() => router.push('/Cart')}
+              <button 
+                onClick={() => router.push('/')} 
                 className="back-to-cart-btn"
                 disabled={loading}
               >
-                Volver al Carrito
+                Seguir Comprando
               </button>
               <button
                 onClick={handleCheckout}

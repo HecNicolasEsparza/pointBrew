@@ -173,7 +173,7 @@ export default function CartPage() {
       <div className="cart-container">
         <div className="cart-header">
           <h1>Mi Carrito</h1>
-          {cartData?.items.length > 0 && (
+          {(cartData?.items?.length ?? 0) > 0 && (
             <button onClick={clearCart} className="clear-cart-btn">
               Vaciar Carrito
             </button>

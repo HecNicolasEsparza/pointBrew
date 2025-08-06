@@ -21,6 +21,7 @@ var storeEmployeesRouter = require('./routes/storeEmployees');
 var userPaymentRoute = require('./routes/userPayment'); 
 // Importar rutas
 const paymentMethodRoutes = require('./routes/paymentMethods');
+const orderRoutes = require('./routes/orders');
 var app = express();
 
 // Connect to database
@@ -50,6 +51,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/store-employees', storeEmployeesRouter);
 app.use('/api/user-payment', userPaymentRoute);
 app.use('/api/payment-methods', paymentMethodRoutes);
+app.use('/api/orders', orderRoutes);
 
 // app.use('/api/store-registration', storeRegistrationRouter);
 
