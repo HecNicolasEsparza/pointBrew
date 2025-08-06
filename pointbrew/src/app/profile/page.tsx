@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import RoleChanger from '@/components/RoleChanger';
 import { useAuth } from '@/contexts/AuthContext';
+import './profile.css';
 
 export default function Profile() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -38,23 +39,23 @@ export default function Profile() {
           </div>
           <h1>Mi Perfil</h1>
         </div>
-        
+
         <div className="profile-info">
           <div className="info-group">
             <label>Nombre completo:</label>
             <span>{user.full_name}</span>
           </div>
-          
+
           <div className="info-group">
             <label>Correo electrónico:</label>
             <span>{user.email}</span>
           </div>
-          
+
           <div className="info-group">
             <label>Rol:</label>
             <span>{user.role_name}</span>
           </div>
-          
+
           <div className="info-group">
             <label>Miembro desde:</label>
             <span>{new Date(user.created_at).toLocaleDateString('es-ES')}</span>
@@ -68,6 +69,15 @@ export default function Profile() {
             <RoleChanger />
           </div>
         )}
+        <div className="profile-actions">
+          <button
+            className="add-payment-btn"
+            onClick={() => router.push('/payment/addPayment')}
+          >
+            Agregar Método de Pago
+          </button>
+        </div>
+
       </div>
     </MockupLayout>
   );
