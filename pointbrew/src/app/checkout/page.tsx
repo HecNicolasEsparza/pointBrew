@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import { FaCreditCard, FaMoneyBillWave, FaMobile, FaUniversity } from 'react-icons/fa';
 import axios from 'axios';
+import CouponSection from '@/components/CouponSection';
 
 interface PaymentMethod {
   method_id: number;
@@ -21,6 +22,8 @@ export default function CheckoutPage() {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
   const { cartItems, cartTotal, clearCart } = useCart();
   const router = useRouter();
@@ -97,6 +100,16 @@ export default function CheckoutPage() {
     } finally {
       setLoadingPaymentMethods(false);
     }
+  };
+
+  const handleCouponApplied = (discount: number, newTotal: number, couponCode: string) => {
+    setAppliedCoupon(couponCode);
+    setDiscountAmount(discount);
+  };
+
+  const calculateFinalTotal = () => {
+    const numCartTotal = parseFloat(cartTotal) || 0;
+    return Math.max(0, numCartTotal - discountAmount);
   };
 
   const handleCheckout = async () => {
@@ -196,7 +209,20 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div className="order-total">
-              <h3>Total: ${cartTotal}</h3>
+              <div className="order-total-line">
+                <span>Subtotal:</span>
+                <span>${cartTotal}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="order-total-line discount">
+                  <span>Descuento ({appliedCoupon}):</span>
+                  <span>-${discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="order-total-line final-total">
+                <span>Total:</span>
+                <span>${calculateFinalTotal().toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
@@ -227,6 +253,13 @@ export default function CheckoutPage() {
                 required
               />
             </div>
+
+            {/* Sección de cupones */}
+            <CouponSection 
+              totalAmount={parseFloat(cartTotal) || 0}
+              userId={user?.user_id || 0}
+              onCouponApplied={handleCouponApplied}
+            />
 
             <div className="form-group">
               <label>Método de Pago</label>

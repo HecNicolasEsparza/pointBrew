@@ -78,7 +78,27 @@
 .order-total {
   border-top: 2px solid #8B4513;
   padding-top: 1rem;
-  text-align: right;
+}
+
+.order-total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.order-total-line.discount {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.order-total-line.final-total {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #8B4513;
 }
 
 .order-total h3 {
