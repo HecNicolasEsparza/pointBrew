@@ -107,7 +107,7 @@ export default function ChoosePaymentMethod() {
 
                     <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                         <button className="confirm-button" onClick={handleConfirm}>Confirmar</button>
-                        <button className="cancel-button"  onClick={() => router.push('/checkout')}>Regresar</button>
+                        <button className="cancel-button"  onClick={() => router.push('/payment/addPayment')}>Agregar métodos de pago</button>
                     </div>
                 </div>
             </div>
