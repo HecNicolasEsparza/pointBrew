@@ -7,8 +7,6 @@ import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import { FaCreditCard, FaMoneyBillWave, FaMobile, FaUniversity } from 'react-icons/fa';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/contexts/redux/store';
 import CouponSection from '@/components/CouponSection';
 
 
@@ -20,6 +18,10 @@ interface PaymentMethod {
 
 export default function CheckoutPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null);
+  useEffect(() => {
+    console.log('Método de pago seleccionado:', selectedPaymentMethod);
+  }, [selectedPaymentMethod]);
+
   const [loading, setLoading] = useState(false);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
   const [customerName, setCustomerName] = useState('');
@@ -28,12 +30,11 @@ export default function CheckoutPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false); // Variable faltante añadida
-  
   const { user, isAuthenticated } = useAuth();
   const { cartItems, cartTotal, clearCart, refreshCart } = useCart();
   const router = useRouter();
 
-  console.log("Redux paymentId:", paymentId);
+
 
 
   // Mapeo de iconos para métodos de pago
@@ -61,7 +62,7 @@ export default function CheckoutPage() {
       router.push('/auth/login');
       return;
     }
-    
+
     // Pre-llenar datos del usuario
     if (user) {
       setCustomerName(user.full_name || '');
@@ -79,7 +80,7 @@ export default function CheckoutPage() {
       const timer = setTimeout(() => {
         router.push('/');
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated, cartItems.length, isProcessing, router]);
@@ -144,35 +145,43 @@ export default function CheckoutPage() {
     try {
       setLoading(true);
       setIsProcessing(true);
-      
+
+      console.log({
+        userId: user?.user_id,
+        storeId: storeId,
+        paymentMethodId: selectedPaymentMethod,
+        customerName,
+        customerEmail,
+        discountAmount,
+        appliedCoupon,
+        finalTotal: calculateFinalTotal()
+      });
+
       const response = await axios.post('http://localhost:3001/api/cart/checkout', {
         userId: user?.user_id,
         storeId: storeId,
         paymentMethodId: selectedPaymentMethod,
         customerName,
         customerEmail,
-        items: cartItems,
         discountAmount: discountAmount,
         appliedCoupon: appliedCoupon,
         finalTotal: calculateFinalTotal()
       });
 
       if (response.data.success) {
-        // Limpiar carrito después del checkout exitoso
         await clearCart();
-        
-        // Mostrar mensaje de éxito detallado
+
         const orderData = response.data.data;
         alert(`¡Pedido realizado exitosamente!
         
-📋 Número de orden: #${orderData.ticketId}
-👤 Cliente: ${orderData.customerName}
-📧 Email: ${orderData.customerEmail}
-💰 Total pagado: $${orderData.finalTotal}
-${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.discountAmount}` : ''}
-        
-¡Gracias por tu compra!`);
-        
+          📋 Número de orden: #${orderData.ticketId}
+          👤 Cliente: ${orderData.customerName}
+          📧 Email: ${orderData.customerEmail}
+          💰 Total pagado: $${orderData.finalTotal}
+          ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.discountAmount}` : ''}
+                  
+          ¡Gracias por tu compra!`);
+
         // Redirigir a una página de éxito
         router.push(`/order-success?orderId=${orderData.ticketId}`);
       } else {
@@ -293,7 +302,7 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
             </div>
 
             {/* Sección de cupones */}
-            <CouponSection 
+            <CouponSection
               totalAmount={parseFloat(cartTotal.toString()) || 0}
               userId={user?.user_id || 0}
               onCouponApplied={handleCouponApplied}
@@ -325,8 +334,8 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
             </div>
 
             <div className="checkout-actions">
-              <button 
-                onClick={() => router.push('/')} 
+              <button
+                onClick={() => router.push('/')}
                 className="back-to-cart-btn"
                 disabled={loading}
               >
