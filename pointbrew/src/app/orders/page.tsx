@@ -4,29 +4,20 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
-import { FaShoppingBag, FaCalendarAlt, FaMapMarkerAlt, FaCreditCard, FaEye } from 'react-icons/fa';
+import { FaShoppingBag, FaCalendarAlt, FaMapMarkerAlt, FaEye } from 'react-icons/fa';
 import axios from 'axios';
-
-interface OrderProduct {
-  quantity: number;
-  unit_price: number;
-  product_name: string;
-  product_image?: string;
-  subtotal: number;
-}
 
 interface Order {
   ticket_id: number;
   total_amount: number;
   ticket_date: string;
   created_at: string;
+  status: string; // Estado del pedido (pending, preparing, ready, completed, cancelled)
   store_name: string;
-  store_image?: string;
-  branch_name: string;
-  branch_address: string;
-  payment_method: string;
-  payment_status: string;
-  products: OrderProduct[];
+  customer_name?: string;
+  customer_email?: string;
+  products_summary: string;
+  total_items: number;
 }
 
 export default function OrdersPage() {
@@ -80,17 +71,47 @@ export default function OrdersPage() {
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'completed':
-      case 'completado':
-        return '#28a745';
       case 'pending':
       case 'pendiente':
-        return '#ffc107';
-      case 'failed':
-      case 'fallido':
-        return '#dc3545';
+        return '#ffc107'; // Amarillo
+      case 'preparing':
+      case 'en_preparacion':
+      case 'in_progress':
+        return '#007bff'; // Azul
+      case 'ready':
+      case 'listo':
+        return '#28a745'; // Verde
+      case 'completed':
+      case 'completado':
+        return '#20c997'; // Verde claro
+      case 'cancelled':
+      case 'cancelado':
+        return '#dc3545'; // Rojo
       default:
-        return '#6c757d';
+        return '#6c757d'; // Gris
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+      case 'pendiente':
+        return 'Pendiente';
+      case 'preparing':
+      case 'en_preparacion':
+      case 'in_progress':
+        return 'En Preparación';
+      case 'ready':
+      case 'listo':
+        return 'Listo para Recoger';
+      case 'completed':
+      case 'completado':
+        return 'Completado';
+      case 'cancelled':
+      case 'cancelado':
+        return 'Cancelado';
+      default:
+        return status || 'Pendiente';
     }
   };
 
@@ -99,6 +120,7 @@ export default function OrdersPage() {
       <MockupLayout title="Mis Pedidos - Point Brew" showAuthButtons={true}>
         <div className="orders-container">
           <div className="loading-state">
+            <div className="loading-spinner"></div>
             <p>Cargando tus pedidos...</p>
           </div>
         </div>
@@ -109,7 +131,16 @@ export default function OrdersPage() {
   return (
     <MockupLayout title="Mis Pedidos - Point Brew" showAuthButtons={true}>
       <div className="orders-container">
-        <h1 className="orders-title">Mis Pedidos</h1>
+        <div className="orders-header">
+          <h1 className="orders-title">Mis Pedidos</h1>
+          <button 
+            onClick={fetchUserOrders}
+            className="refresh-all-btn"
+            disabled={loading}
+          >
+            🔄 Actualizar Estados
+          </button>
+        </div>
         
         {error && (
           <div className="error-state">
@@ -144,19 +175,19 @@ export default function OrdersPage() {
                         <FaCalendarAlt /> {formatDate(order.created_at)}
                       </span>
                       <span className="order-store">
-                        <FaMapMarkerAlt /> {order.store_name} - {order.branch_name}
+                        <FaMapMarkerAlt /> {order.store_name}
                       </span>
-                      <span className="order-payment">
-                        <FaCreditCard /> {order.payment_method}
+                      <span className="order-customer">
+                        👤 {order.customer_name || 'Cliente'}
                       </span>
                     </div>
                   </div>
                   <div className="order-status">
                     <span 
                       className="status-badge"
-                      style={{ backgroundColor: getStatusColor(order.payment_status) }}
+                      style={{ backgroundColor: getStatusColor(order.status) }}
                     >
-                      {order.payment_status || 'Pendiente'}
+                      {getStatusText(order.status)}
                     </span>
                     <div className="order-total">
                       ${order.total_amount.toFixed(2)}
@@ -165,30 +196,16 @@ export default function OrdersPage() {
                 </div>
                 
                 <div className="order-products">
-                  <div className="products-preview">
-                    {order.products.slice(0, 3).map((product, index) => (
-                      <div key={index} className="product-preview">
-                        <img 
-                          src={product.product_image || "/img/placeHolderFood.jpg"} 
-                          alt={product.product_name}
-                          onError={(e) => {
-                            e.currentTarget.src = "/img/placeHolderFood.jpg";
-                          }}
-                        />
-                        <div className="product-info">
-                          <span className="product-name">{product.product_name}</span>
-                          <span className="product-quantity">x{product.quantity}</span>
-                        </div>
-                      </div>
-                    ))}
-                    {order.products.length > 3 && (
-                      <div className="more-products">
-                        +{order.products.length - 3} más
-                      </div>
-                    )}
+                  <div className="products-summary">
+                    <span className="products-text">
+                      {order.products_summary}
+                    </span>
+                    <span className="items-count">
+                      {order.total_items} item{order.total_items !== 1 ? 's' : ''}
+                    </span>
                   </div>
                 </div>
-                
+
                 <div className="order-actions">
                   <button 
                     onClick={() => setSelectedOrder(order)}
@@ -196,19 +213,13 @@ export default function OrdersPage() {
                   >
                     <FaEye /> Ver Detalles
                   </button>
-                  <button 
-                    onClick={() => router.push(`/menu/${order.store_name}`)}
-                    className="reorder-btn"
-                  >
-                    Pedir de Nuevo
-                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
-        
-        {/* Modal de detalles del pedido */}
+
+        {/* Modal de detalles */}
         {selectedOrder && (
           <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -216,9 +227,9 @@ export default function OrdersPage() {
                 <h2>Detalles del Pedido #{selectedOrder.ticket_id}</h2>
                 <button 
                   onClick={() => setSelectedOrder(null)}
-                  className="close-modal-btn"
+                  className="close-btn"
                 >
-                  ×
+                  ✕
                 </button>
               </div>
               
@@ -226,43 +237,25 @@ export default function OrdersPage() {
                 <div className="order-details">
                   <p><strong>Fecha:</strong> {formatDate(selectedOrder.created_at)}</p>
                   <p><strong>Tienda:</strong> {selectedOrder.store_name}</p>
-                  <p><strong>Sucursal:</strong> {selectedOrder.branch_name}</p>
-                  <p><strong>Dirección:</strong> {selectedOrder.branch_address}</p>
-                  <p><strong>Método de pago:</strong> {selectedOrder.payment_method}</p>
+                  <p><strong>Cliente:</strong> {selectedOrder.customer_name || 'N/A'}</p>
+                  <p><strong>Email:</strong> {selectedOrder.customer_email || 'N/A'}</p>
                   <p>
-                    <strong>Estado:</strong> 
+                    <strong>Estado:</strong>
                     <span 
                       className="status-badge"
-                      style={{ backgroundColor: getStatusColor(selectedOrder.payment_status), marginLeft: '0.5rem' }}
+                      style={{ backgroundColor: getStatusColor(selectedOrder.status), marginLeft: '0.5rem' }}
                     >
-                      {selectedOrder.payment_status || 'Pendiente'}
+                      {getStatusText(selectedOrder.status)}
                     </span>
                   </p>
                 </div>
-                
+
                 <div className="order-products-detail">
                   <h3>Productos:</h3>
-                  {selectedOrder.products.map((product, index) => (
-                    <div key={index} className="product-detail">
-                      <img 
-                        src={product.product_image || "/img/placeHolderFood.jpg"} 
-                        alt={product.product_name}
-                        onError={(e) => {
-                          e.currentTarget.src = "/img/placeHolderFood.jpg";
-                        }}
-                      />
-                      <div className="product-detail-info">
-                        <h4>{product.product_name}</h4>
-                        <p>Cantidad: {product.quantity}</p>
-                        <p>Precio unitario: ${product.unit_price.toFixed(2)}</p>
-                      </div>
-                      <div className="product-detail-total">
-                        ${product.subtotal.toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
+                  <p>{selectedOrder.products_summary}</p>
+                  <p><strong>Total de items:</strong> {selectedOrder.total_items}</p>
                 </div>
-                
+
                 <div className="order-total-detail">
                   <h3>Total: ${selectedOrder.total_amount.toFixed(2)}</h3>
                 </div>

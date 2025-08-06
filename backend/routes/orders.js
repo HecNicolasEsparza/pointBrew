@@ -159,7 +159,7 @@ router.get('/user/:userId', async (req, res) => {
                     t.total_amount,
                     t.customer_name,
                     t.customer_email,
-                    t.status,
+                    COALESCE(t.status, 'pending') as status,
                     t.ticket_date,
                     t.created_at,
                     t.updated_at,
