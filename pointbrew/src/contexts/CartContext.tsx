@@ -1,88 +1,87 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import axios from 'axios';
 
 interface CartItem {
   cart_id: number;
+  user_id: number;
   product_id: number;
+  quantity: number;
   product_name: string;
   price: number;
-  quantity: number;
   image_url?: string;
   subtotal: number;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  cartTotal: string;
   cartCount: number;
-  loading: boolean;
-  refreshCart: () => Promise<void>;
+  cartTotal: string;
   addToCart: (productId: number, quantity: number) => Promise<boolean>;
-  updateQuantity: (cartId: number, quantity: number) => Promise<boolean>;
+  updateCartItem: (cartId: number, quantity: number) => Promise<boolean>;
   removeFromCart: (cartId: number) => Promise<boolean>;
-  clearCart: () => Promise<boolean>;
+  clearCart: () => Promise<void>;
+  refreshCart: () => Promise<void>;
+  loading: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
-};
-
-interface CartProviderProps {
-  children: ReactNode;
-}
-
-export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [cartTotal, setCartTotal] = useState<string>('0.00');
   const [loading, setLoading] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  // Calcular totales
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const cartTotal = cartItems.reduce((total, item) => total + item.subtotal, 0).toFixed(2);
 
+  // Cargar carrito del usuario
   const refreshCart = async () => {
     if (!user?.user_id || !isAuthenticated) {
       setCartItems([]);
-      setCartTotal('0.00');
       return;
     }
 
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:3001/api/cart/${user.user_id}`);
-      
-      if (response.data.success) {
-        setCartItems(response.data.data.items || []);
-        setCartTotal(response.data.data.total || '0.00');
+      const response = await fetch(`http://localhost:3001/api/cart/${user.user_id}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setCartItems(data.data.items || []);
+      } else {
+        setCartItems([]);
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
       setCartItems([]);
-      setCartTotal('0.00');
     } finally {
       setLoading(false);
     }
   };
 
+  // Agregar producto al carrito
   const addToCart = async (productId: number, quantity: number): Promise<boolean> => {
     if (!user?.user_id) return false;
 
     try {
-      const response = await axios.post('http://localhost:3001/api/cart/add', {
-        userId: user.user_id,
-        productId,
-        quantity
+      const response = await fetch('http://localhost:3001/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.user_id,
+          productId,
+          quantity,
+        }),
       });
 
-      if (response.data.success) {
-        await refreshCart();
+      const data = await response.json();
+
+      if (data.success) {
+        await refreshCart(); // Refrescar carrito después de agregar
         return true;
       }
       return false;
@@ -92,33 +91,41 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   };
 
-  const updateQuantity = async (cartId: number, quantity: number): Promise<boolean> => {
+  // Actualizar cantidad de item
+  const updateCartItem = async (cartId: number, quantity: number): Promise<boolean> => {
     try {
-      if (quantity === 0) {
-        return await removeFromCart(cartId);
-      }
-
-      const response = await axios.put(`http://localhost:3001/api/cart/${cartId}`, {
-        quantity
+      const response = await fetch(`http://localhost:3001/api/cart/${cartId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ quantity }),
       });
 
-      if (response.data.success) {
-        await refreshCart();
+      const data = await response.json();
+
+      if (data.success) {
+        await refreshCart(); // Refrescar carrito después de actualizar
         return true;
       }
       return false;
     } catch (error) {
-      console.error('Error updating quantity:', error);
+      console.error('Error updating cart item:', error);
       return false;
     }
   };
 
+  // Eliminar item del carrito
   const removeFromCart = async (cartId: number): Promise<boolean> => {
     try {
-      const response = await axios.delete(`http://localhost:3001/api/cart/${cartId}`);
+      const response = await fetch(`http://localhost:3001/api/cart/${cartId}`, {
+        method: 'DELETE',
+      });
 
-      if (response.data.success) {
-        await refreshCart();
+      const data = await response.json();
+
+      if (data.success) {
+        await refreshCart(); // Refrescar carrito después de eliminar
         return true;
       }
       return false;
@@ -128,47 +135,53 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   };
 
-  const clearCart = async (): Promise<boolean> => {
-    if (!user?.user_id) return false;
+  // Limpiar carrito completo
+  const clearCart = async (): Promise<void> => {
+    if (!user?.user_id) return;
 
     try {
-      const response = await axios.delete(`http://localhost:3001/api/cart/clear/${user.user_id}`);
+      const response = await fetch(`http://localhost:3001/api/cart/clear/${user.user_id}`, {
+        method: 'DELETE',
+      });
 
-      if (response.data.success) {
-        await refreshCart();
-        return true;
+      const data = await response.json();
+
+      if (data.success) {
+        setCartItems([]); // Limpiar inmediatamente en el estado local
       }
-      return false;
     } catch (error) {
       console.error('Error clearing cart:', error);
-      return false;
     }
   };
 
+  // Cargar carrito cuando el usuario cambie
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user?.user_id) {
       refreshCart();
     } else {
       setCartItems([]);
-      setCartTotal('0.00');
     }
-  }, [isAuthenticated, user]);
+  }, [user?.user_id, isAuthenticated]);
 
   const value: CartContextType = {
     cartItems,
-    cartTotal,
     cartCount,
-    loading,
-    refreshCart,
+    cartTotal,
     addToCart,
-    updateQuantity,
+    updateCartItem,
     removeFromCart,
-    clearCart
+    clearCart,
+    refreshCart,
+    loading,
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+};
+
+export const useCart = (): CartContextType => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
 };
