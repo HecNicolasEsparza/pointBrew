@@ -7,7 +7,10 @@ import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import { FaCreditCard, FaMoneyBillWave, FaMobile, FaUniversity } from 'react-icons/fa';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/contexts/redux/store';
 import CouponSection from '@/components/CouponSection';
+
 
 interface PaymentMethod {
   method_id: number;
@@ -29,6 +32,9 @@ export default function CheckoutPage() {
   const { user, isAuthenticated } = useAuth();
   const { cartItems, cartTotal, clearCart, refreshCart } = useCart();
   const router = useRouter();
+
+  console.log("Redux paymentId:", paymentId);
+
 
   // Mapeo de iconos para métodos de pago
   const getPaymentIcon = (methodName: string): React.ReactElement => {
@@ -82,7 +88,7 @@ export default function CheckoutPage() {
     try {
       setLoadingPaymentMethods(true);
       const response = await axios.get('http://localhost:3001/api/payment-methods');
-      
+
       if (response.data.success) {
         const methodsWithIcons = response.data.data.map((method: any) => ({
           method_id: method.method_id,
@@ -90,7 +96,7 @@ export default function CheckoutPage() {
           icon: getPaymentIcon(method.method_name)
         }));
         setPaymentMethods(methodsWithIcons);
-        
+
         // Seleccionar el primer método por defecto
         if (methodsWithIcons.length > 0) {
           setSelectedPaymentMethod(methodsWithIcons[0].method_id);
@@ -214,7 +220,7 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
     <MockupLayout title="Finalizar Pedido - Point Brew" showAuthButtons={true}>
       <div className="checkout-container">
         <h1 className="checkout-title">Finalizar Pedido</h1>
-        
+
         <div className="checkout-layout">
           {/* Resumen del pedido */}
           <div className="order-summary">
@@ -222,8 +228,8 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
             <div className="order-items">
               {cartItems.map((item) => (
                 <div key={item.cart_id} className="order-item">
-                  <img 
-                    src={item.image_url || "/img/placeHolderFood.jpg"} 
+                  <img
+                    src={item.image_url || "/img/placeHolderFood.jpg"}
                     alt={item.product_name}
                     className="order-item-image"
                     onError={(e) => {
@@ -259,7 +265,7 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
           {/* Formulario de checkout */}
           <div className="checkout-form">
             <h2>Información del Cliente</h2>
-            
+
             <div className="form-group">
               <label htmlFor="customerName">Nombre Completo</label>
               <input
@@ -301,7 +307,7 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
                 </div>
               ) : (
                 <div className="payment-methods">
-                  {paymentMethods.map((method) => (
+                  {paymentMethods.map((method, index) => (
                     <button
                       key={method.method_id}
                       type="button"
@@ -313,6 +319,7 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
                       <span>{method.method_name}</span>
                     </button>
                   ))}
+
                 </div>
               )}
             </div>
@@ -325,7 +332,7 @@ ${orderData.discountAmount > 0 ? `🎟️ Descuento aplicado: $${orderData.disco
               >
                 Seguir Comprando
               </button>
-              <button 
+              <button
                 onClick={handleCheckout}
                 className="place-order-btn"
                 disabled={loading || loadingPaymentMethods || !selectedPaymentMethod}
