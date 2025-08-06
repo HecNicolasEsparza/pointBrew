@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import MockupLayout from '@/components/MockupLayout';
 import axios from 'axios';
+import styles from './page.module.css';
 
 interface Store {
   store_id: number;
@@ -82,140 +83,88 @@ export default function ManageWorkerStores() {
 
   return (
     <MockupLayout title="Mis Tiendas de Trabajo - Point Brew" showAuthButtons={true}>
-      <div className="manage-stores-container">
-        <div className="manage-stores-header">
+      <div className={styles['manage-stores-container']}>
+        <div className={styles['manage-stores-header']}>
           <button 
             onClick={() => router.push('/')}
-            className="back-btn"
+            className={styles['back-btn']}
           >
             ← Volver al inicio
           </button>
           <h1>Tiendas en las que trabajo</h1>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className={styles['error-message']}>{error}</div>}
 
         {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
+          <div className={styles['loading-container']}>
+            <div className={styles['loading-spinner']}></div>
             <p>Cargando tus tiendas...</p>
           </div>
         ) : (
-          <div className="manage-stores-content">
+          <div className={styles['manage-stores-content']}>
             {stores.length === 0 ? (
-              <div className="no-stores">
-                <div className="no-stores-icon">🏪</div>
+              <div className={styles['no-stores']}>
+                <div className={styles['no-stores-icon']}>🏪</div>
                 <h3>No tienes tiendas asignadas</h3>
                 <p>Contacta con tu administrador para que te asigne a una tienda.</p>
               </div>
             ) : (
               <>
-                <div className="stores-summary">
-                  <div className="summary-card">
+                <div className={styles['stores-summary']}>
+                  <div className={styles['summary-card']}>
                     <h3>{stores.length}</h3>
                     <p>Tienda{stores.length !== 1 ? 's' : ''} Asignada{stores.length !== 1 ? 's' : ''}</p>
                   </div>
-                  <div className="summary-card">
+                  <div className={styles['summary-card']}>
                     <h3>{user?.full_name}</h3>
                     <p>Empleado</p>
                   </div>
                 </div>
 
-                <div className="stores-grid">
+                <div className={styles['stores-grid']}>
                   {stores.map((store) => (
-                    <div key={store.store_id} style={{
-                      backgroundColor: 'white',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                      transition: 'transform 0.2s ease'
-                    }}>
-                      <div style={{
-                        position: 'relative',
-                        width: '100%',
-                        height: '200px',
-                        overflow: 'hidden'
-                      }}>
+                    <div key={store.store_id} className={styles['store-card']}>
+                      <div className={styles['store-image-container']}>
                         <img 
                           src={getStoreImage(store)} 
                           alt={store.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            objectPosition: 'center'
-                          }}
+                          className={styles['store-image']}
                           onError={(e) => {
                             e.currentTarget.src = "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
                           }}
                         />
-                        <div style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          backgroundColor: '#3B82F6',
-                          color: 'white',
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          fontSize: '12px',
-                          fontWeight: '500'
-                        }}>
+                        <div className={styles['employee-badge']}>
                           Empleado
                         </div>
                       </div>
                       
-                      <div style={{ padding: '16px' }}>
-                        <h3 style={{
-                          margin: '0 0 8px 0',
-                          fontSize: '18px',
-                          fontWeight: '600',
-                          color: '#1F2937'
-                        }}>
+                      <div className={styles['store-content']}>
+                        <h3 className={styles['store-name']}>
                           {store.name}
                         </h3>
-                        <p style={{
-                          margin: '0 0 12px 0',
-                          fontSize: '14px',
-                          color: '#6B7280'
-                        }}>
+                        <p className={styles['store-description']}>
                           {store.description || 'Sin descripción'}
                         </p>
-                        <div style={{ marginBottom: '12px' }}>
-                          <strong style={{ fontSize: '14px', color: '#1F2937' }}>
+                        <div className={styles['store-branch']}>
+                          <div className={styles['branch-name']}>
                             {store.branch_name}
-                          </strong>
-                          <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                          </div>
+                          <div className={styles['branch-address']}>
                             {store.branch_address}
                           </div>
                         </div>
-                        <div style={{ 
-                          fontSize: '12px', 
-                          color: '#9CA3AF',
-                          marginBottom: '16px'
-                        }}>
-                          <div>Registrada: {new Date(store.created_at).toLocaleDateString('es-ES')}</div>
+                        <div className={styles['store-dates']}>
+                          <div>📅 Registrada: {new Date(store.created_at).toLocaleDateString('es-ES')}</div>
                           {store.updated_at !== store.created_at && (
-                            <div>Actualizada: {new Date(store.updated_at).toLocaleDateString('es-ES')}</div>
+                            <div>🔄 Actualizada: {new Date(store.updated_at).toLocaleDateString('es-ES')}</div>
                           )}
                         </div>
 
-                        <div style={{
-                          display: 'flex',
-                          gap: '8px',
-                          flexWrap: 'wrap'
-                        }}>
+                        <div className={styles['store-actions']}>
                           <button 
                             onClick={() => handleViewStore(store.store_id)}
-                            style={{
-                              backgroundColor: '#6B7280',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '6px 12px',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              transition: 'background-color 0.2s ease'
-                            }}
+                            className={`${styles['action-btn']} ${styles['btn-view']}`}
                             title="Ver tienda pública"
                           >
                             👁️ Ver Tienda
@@ -223,16 +172,7 @@ export default function ManageWorkerStores() {
                           
                           <button 
                             onClick={() => handleEditMenu(store.store_id)}
-                            style={{
-                              backgroundColor: '#3B82F6',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '6px 12px',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              transition: 'background-color 0.2s ease'
-                            }}
+                            className={`${styles['action-btn']} ${styles['btn-edit']}`}
                             title="Administrar menú de productos"
                           >
                             📋 Editar Menú
@@ -240,16 +180,7 @@ export default function ManageWorkerStores() {
 
                           <button 
                             onClick={() => router.push(`/store/manage-customers-turns?storeId=${store.store_id}`)}
-                            style={{
-                              backgroundColor: '#10B981',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '6px 12px',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              transition: 'background-color 0.2s ease'
-                            }}
+                            className={`${styles['action-btn']} ${styles['btn-manage']}`}
                             title="Gestionar turnos de clientes"
                           >
                             🎯 Gestionar Turnos

@@ -24,6 +24,8 @@ export default function CheckoutPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false); // Variable faltante añadida
+  
   const { user, isAuthenticated } = useAuth();
   const { cartItems, cartTotal, clearCart, refreshCart } = useCart();
   const router = useRouter();
@@ -115,7 +117,7 @@ export default function CheckoutPage() {
   };
 
   const calculateFinalTotal = () => {
-    const numCartTotal = parseFloat(cartTotal) || 0;
+    const numCartTotal = parseFloat(cartTotal.toString()) || 0; // Conversión mejorada
     return Math.max(0, numCartTotal - discountAmount);
   };
 
@@ -271,7 +273,7 @@ export default function CheckoutPage() {
 
             {/* Sección de cupones */}
             <CouponSection 
-              totalAmount={parseFloat(cartTotal) || 0}
+              totalAmount={parseFloat(cartTotal.toString()) || 0}
               userId={user?.user_id || 0}
               onCouponApplied={handleCouponApplied}
             />
