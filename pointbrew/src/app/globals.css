@@ -81,6 +81,24 @@ body {
   color: white;
 }
 
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.logo-link:hover {
+  opacity: 0.8;
+}
+
+.header-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+  cursor: pointer;
+}
+
 .nav-buttons {
   display: flex;
   align-items: center;

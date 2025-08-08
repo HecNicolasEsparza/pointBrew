@@ -57,13 +57,6 @@ export default function Home() {
         {/* Sidebar de navegación del lado derecho */}
         <aside className="sidebar">
           <nav className="sidebar-nav">
-            <Link href="/" className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
-              Inicio
-            </Link>
-            <div className={`nav-item ${!isAuthenticated ? 'disabled' : ''}`}>
-              Ofertas
-            </div>
-            
             {/* Botón para ver pedidos - solo para usuarios autenticados */}
             {isAuthenticated ? (
               <Link href="/orders" className="nav-item">

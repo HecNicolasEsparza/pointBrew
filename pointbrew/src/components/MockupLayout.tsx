@@ -19,7 +19,9 @@ export default function MockupLayout({ title, children, showAuthButtons = true }
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1></h1>
+        <Link href="/" className="logo-link">
+          <h1 className="header-title">PointBrew</h1>
+        </Link>
         
         {showAuthButtons && (
           <div className="nav-buttons">
