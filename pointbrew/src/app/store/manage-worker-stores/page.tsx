@@ -82,7 +82,9 @@ export default function ManageWorkerStores() {
   }
 
   return (
+    
     <MockupLayout title="Mis Tiendas de Trabajo - Point Brew" showAuthButtons={true}>
+      <div className={styles['solvingSpace']}></div>
       <div className={styles['manage-stores-container']}>
         <div className={styles['manage-stores-header']}>
           <button 
