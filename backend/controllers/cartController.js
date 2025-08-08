@@ -19,6 +19,7 @@ const cartController = {
             p.name as product_name,
             p.price,
             p.image_url,
+            p.store_id,
             (c.quantity * p.price) as subtotal
           FROM Cart c
           INNER JOIN Product p ON c.product_id = p.product_id

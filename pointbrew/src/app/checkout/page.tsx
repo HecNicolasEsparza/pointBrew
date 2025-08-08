@@ -139,6 +139,22 @@ export default function CheckoutPage() {
     return Math.max(0, numCartTotal - discountAmount);
   };
 
+  const getStoreIdFromCart = () => {
+    if (cartItems.length === 0) return 1; // Fallback por si acaso
+    
+    // Validar que todos los productos sean de la misma tienda
+    const firstStoreId = cartItems[0].store_id;
+    const allSameStore = cartItems.every(item => item.store_id === firstStoreId);
+    
+    if (!allSameStore) {
+      console.warn('⚠️ Productos de diferentes tiendas detectados en el carrito');
+      // En caso de productos de diferentes tiendas, usar la primera tienda
+      // En el futuro se podría implementar checkout por tienda
+    }
+    
+    return firstStoreId;
+  };
+
   const handleCheckout = async () => {
     if (!customerName.trim() || !customerEmail.trim()) {
       alert('Por favor, verifica que tu información esté completa');
@@ -150,8 +166,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Por ahora usar storeId = 1, esto se puede mejorar más tarde
-    const storeId = 1;
+    // Obtener el storeId de los productos en el carrito
+    const storeId = getStoreIdFromCart();
 
     try {
       setLoading(true);

@@ -10,6 +10,7 @@ interface CartItem {
   product_name: string;
   price: number;
   image_url?: string;
+  store_id: number;
   subtotal: number;
 }
 
