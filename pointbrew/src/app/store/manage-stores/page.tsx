@@ -71,7 +71,7 @@ export default function ManageStoresPage() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.data.success) {
         setStores(response.data.data);
       } else {
@@ -116,43 +116,43 @@ export default function ManageStoresPage() {
       type: file.type
     });
     console.log('Cloudinary cloud name:', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME);
-    
+
     if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
       throw new Error('Cloudinary cloud name not configured. Check NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME environment variable.');
     }
-    
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', 'store_images');
-    
+
     console.log('FormData prepared, uploading to Cloudinary...');
-    
+
     try {
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
       console.log('Uploading to:', cloudinaryUrl);
-      
+
       const response = await fetch(cloudinaryUrl, {
         method: 'POST',
         body: formData,
       });
-      
+
       console.log('Cloudinary response status:', response.status);
       console.log('Cloudinary response ok:', response.ok);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Cloudinary error response:', errorText);
         throw new Error(`Cloudinary upload failed: ${response.status} - ${errorText}`);
       }
-      
+
       const data = await response.json();
       console.log('Cloudinary upload successful:', data);
       console.log('Image URL:', data.secure_url);
-      
+
       if (!data.secure_url) {
         throw new Error('No secure_url received from Cloudinary');
       }
-      
+
       return data.secure_url;
     } catch (error) {
       console.error('Error uploading to Cloudinary:', error);
@@ -181,11 +181,11 @@ export default function ManageStoresPage() {
     try {
       setUploadingImage(true);
       setError('');
-      
+
       console.log('Uploading image to Cloudinary...');
       const imageUrl = await uploadImageToCloudinary(file);
       console.log('Image uploaded successfully, URL:', imageUrl);
-      
+
       setStoreFormData(prev => {
         const updated = {
           ...prev,
@@ -194,10 +194,10 @@ export default function ManageStoresPage() {
         console.log('Updated form data with image URL:', updated);
         return updated;
       });
-      
+
       setSuccess('Imagen subida exitosamente');
       setTimeout(() => setSuccess(''), 2000);
-      
+
     } catch (error) {
       console.error('Error uploading image:', error);
       if (error instanceof Error) {
@@ -233,10 +233,10 @@ export default function ManageStoresPage() {
     try {
       setSubmitting(true);
       setError('');
-      
+
       console.log('Updating store:', editingStore.store_id);
       console.log('Store data being sent:', storeFormData);
-      
+
       // Clean the data before sending - include branch_id
       const cleanedData = {
         name: storeFormData.name.trim(),
@@ -268,14 +268,14 @@ export default function ManageStoresPage() {
 
         if (response.data.success) {
           // Server update successful
-          setStores(prevStores => 
-            prevStores.map(store => 
-              store.store_id === editingStore.store_id 
+          setStores(prevStores =>
+            prevStores.map(store =>
+              store.store_id === editingStore.store_id
                 ? { ...store, ...storeFormData, updated_at: new Date().toISOString() }
                 : store
             )
           );
-          
+
           setSuccess('Configuración actualizada exitosamente');
           setShowConfigModal(false);
           setEditingStore(null);
@@ -285,17 +285,17 @@ export default function ManageStoresPage() {
       } catch (serverError: any) {
         console.error('Server update failed:', serverError.response?.status, serverError.response?.data);
         console.error('Full server error:', serverError);
-        
+
         // Show specific error message from server
         if (serverError.response?.data?.error) {
           setError(`Error del servidor: ${serverError.response.data.error}`);
           return;
         }
-        
+
         // If server fails, update locally immediately
-        setStores(prevStores => 
-          prevStores.map(store => 
-            store.store_id === editingStore.store_id 
+        setStores(prevStores =>
+          prevStores.map(store =>
+            store.store_id === editingStore.store_id
               ? { ...store, ...storeFormData, updated_at: new Date().toISOString() }
               : store
           )
@@ -314,11 +314,11 @@ export default function ManageStoresPage() {
 
     } catch (error: any) {
       console.error('Error updating store:', error);
-      
+
       if (error.response) {
         const status = error.response.status;
         const errorData = error.response.data;
-        
+
         if (status === 401) {
           setError('No autorizado. Por favor inicia sesión nuevamente.');
         } else if (status === 403) {
@@ -362,14 +362,14 @@ export default function ManageStoresPage() {
     <MockupLayout title="Administrar Mis Tiendas" showAuthButtons={true}>
       <div className="manage-stores-container">
         <div className="manage-stores-header">
-          <button 
+          <button
             onClick={() => router.push('/')}
             className="back-btn"
           >
             ← Volver al inicio
           </button>
           <h1>Administrar Mis Tiendas</h1>
-          <button 
+          <button
             onClick={() => router.push('/store/register-store')}
             className="add-store-btn"
           >
@@ -392,7 +392,7 @@ export default function ManageStoresPage() {
                 <div className="no-stores-icon">🏪</div>
                 <h3>No tienes tiendas registradas</h3>
                 <p>Registra tu primera tienda para comenzar a administrar tu negocio.</p>
-                <button 
+                <button
                   onClick={() => router.push('/store/register-store')}
                   className="register-first-store-btn"
                 >
@@ -427,8 +427,8 @@ export default function ManageStoresPage() {
                         height: '200px',
                         overflow: 'hidden'
                       }}>
-                        <img 
-                          src={getStoreImage(store)} 
+                        <img
+                          src={getStoreImage(store)}
                           alt={store.name}
                           style={{
                             width: '100%',
@@ -451,7 +451,7 @@ export default function ManageStoresPage() {
                           Activa
                         </div>
                       </div>
-                      
+
                       <div style={{ padding: '16px' }}>
                         <h3 style={{
                           margin: '0 0 8px 0',
@@ -476,8 +476,8 @@ export default function ManageStoresPage() {
                             {store.branch_address}
                           </div>
                         </div>
-                        <div style={{ 
-                          fontSize: '12px', 
+                        <div style={{
+                          fontSize: '12px',
                           color: '#9CA3AF',
                           marginBottom: '16px'
                         }}>
@@ -492,6 +492,7 @@ export default function ManageStoresPage() {
                           gap: '8px',
                           flexWrap: 'wrap'
                         }}>
+                          {/*
                           <button 
                             onClick={() => handleViewStore(store.store_id)}
                             style={{
@@ -508,8 +509,8 @@ export default function ManageStoresPage() {
                           >
                             👁️ Ver Tienda
                           </button>
-                          
-                          <button 
+                          */}
+                          <button
                             onClick={() => handleEditMenu(store.store_id)}
                             style={{
                               backgroundColor: '#3B82F6',
@@ -525,8 +526,8 @@ export default function ManageStoresPage() {
                           >
                             📋 Editar Menú
                           </button>
-                          
-                          <button 
+
+                          <button
                             onClick={() => handleEditStore(store)}
                             style={{
                               backgroundColor: '#059669',
@@ -542,8 +543,8 @@ export default function ManageStoresPage() {
                           >
                             ⚙️ Configurar
                           </button>
-                          
-                          <button 
+
+                          <button
                             onClick={() => router.push(`/store/${store.store_id}/manage-employees`)}
                             style={{
                               backgroundColor: '#8B5CF6',
@@ -575,7 +576,7 @@ export default function ManageStoresPage() {
             <div className="modal-content store-config-modal">
               <div className="modal-header">
                 <h2>Configurar Tienda: {editingStore.name}</h2>
-                <button 
+                <button
                   onClick={handleCloseModal}
                   className="close-modal-btn"
                   aria-label="Cerrar modal"
@@ -584,12 +585,12 @@ export default function ManageStoresPage() {
                   ✕
                 </button>
               </div>
-              
+
               <form onSubmit={handleUpdateStore} className="store-config-form">
                 {/* Image Upload Section */}
                 <div className="image-upload-container">
                   <label className="image-upload-label">Imagen de la Tienda</label>
-                  
+
                   {/* Debug info */}
                   {process.env.NODE_ENV === 'development' && (
                     <div style={{ marginBottom: '10px', padding: '8px', backgroundColor: '#f0f0f0', fontSize: '12px' }}>
@@ -598,14 +599,14 @@ export default function ManageStoresPage() {
                       Current image URL: {storeFormData.image_url || 'None'}
                     </div>
                   )}
-                  
+
                   <div className="image-upload-area">
                     {storeFormData.image_url ? (
                       <div className="image-preview">
-                        <img 
-                          src={storeFormData.image_url} 
-                          alt="Preview" 
-                          className="preview-image" 
+                        <img
+                          src={storeFormData.image_url}
+                          alt="Preview"
+                          className="preview-image"
                         />
                         <div className="image-overlay">
                           <button
@@ -641,7 +642,7 @@ export default function ManageStoresPage() {
                         </button>
                       </div>
                     )}
-                    
+
                     {uploadingImage && (
                       <div className="uploading-overlay">
                         <div className="upload-progress">
@@ -651,7 +652,7 @@ export default function ManageStoresPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -732,15 +733,15 @@ export default function ManageStoresPage() {
                 {error && <div className="error-message">{error}</div>}
 
                 <div className="form-actions">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={handleCloseModal}
                     className="cancel-btn"
                     disabled={submitting || uploadingImage}
                   >
                     Cancelar
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     className="save-btn"
                     disabled={submitting || uploadingImage}
