@@ -8,6 +8,8 @@ import MockupLayout from '@/components/MockupLayout';
 import { FaCreditCard, FaMoneyBillWave, FaMobile, FaUniversity } from 'react-icons/fa';
 import axios from 'axios';
 import CouponSection from '@/components/CouponSection';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/contexts/redux/store';
 
 
 interface PaymentMethod {
@@ -17,9 +19,14 @@ interface PaymentMethod {
 }
 
 export default function CheckoutPage() {
+
+  const paymentId = useSelector((state: RootState) => state.payment.paymentId);
+
+
+
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null);
   useEffect(() => {
-    console.log('Método de pago seleccionado:', selectedPaymentMethod);
+    console.log('valor de paymentMethod:', selectedPaymentMethod);
   }, [selectedPaymentMethod]);
 
   const [loading, setLoading] = useState(false);
@@ -56,6 +63,10 @@ export default function CheckoutPage() {
         return <FaCreditCard />;
     }
   };
+
+  useEffect(() => {
+    console.log("📢 Estado de paymentId en Redux:", paymentId);
+  }, [paymentId]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -316,19 +327,25 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <div className="payment-methods">
-                  {paymentMethods.map((method, index) => (
+                  {paymentMethods.map((method) => (
                     <button
                       key={method.method_id}
                       type="button"
                       className={`payment-method ${selectedPaymentMethod === method.method_id ? 'selected' : ''}`}
-                      onClick={() => setSelectedPaymentMethod(method.method_id)}
+                      onClick={() => {
+                        // 🆕 Validación chistosa
+                        if (method.method_id === 2 && paymentId === null) {
+                          router.push("/choosePaymentMethod");
+                          return;
+                        }
+                        setSelectedPaymentMethod(method.method_id);
+                      }}
                       disabled={loading}
                     >
                       {method.icon}
                       <span>{method.method_name}</span>
                     </button>
                   ))}
-
                 </div>
               )}
             </div>
