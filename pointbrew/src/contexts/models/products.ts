@@ -7,6 +7,7 @@ export interface Product {
   updated_at: string;
   category_name: string;
   category_id: number;
+  image_url?: string;
 }
 
 export interface ProductResponse {
