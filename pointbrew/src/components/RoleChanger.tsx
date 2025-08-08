@@ -46,14 +46,15 @@ const RoleChanger: React.FC = () => {
   };
 
   const getButtonStyle = () => {
-    const baseStyle = "px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50";
-    
-    if (user.role_name === 'Customer') {
-      return `${baseStyle} bg-blue-600 hover:bg-blue-700 text-white`;
-    } else {
-      return `${baseStyle} bg-green-600 hover:bg-green-700 text-white`;
-    }
-  };
+  const baseStyle = "px-6 py-2 rounded-full font-handwriting text-lg transition-all duration-200 disabled:opacity-50";
+
+  if (user.role_name === 'Customer') {
+    return `${baseStyle} bg-[#302014] hover:bg-[#2A1E15] text-white`;
+  } else {
+    return `${baseStyle} bg-[#302014] hover:bg-[#2A1E15] text-white`;
+  }
+};
+
 
   const getRoleDescription = () => {
     if (user.role_name === 'Customer') {

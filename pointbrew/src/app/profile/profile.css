@@ -1,4 +1,6 @@
-
+.espacio{
+  height: 70px;
+}
 .profile-container {
   max-width: 600px;
   margin: 2rem auto;
@@ -100,4 +102,23 @@
 .add-payment-btn:active {
   background-color: #2c4a99;
   transform: translateY(0);
+}
+
+.role-changer-container button {
+  background-color: #302014;
+  color: white;
+  font-family: 'Just Another Hand', cursive;
+  font-size: 1.1rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 9999px; /* full rounded */
+  transition: background-color 0.2s ease;
+}
+
+.role-changer-container button:hover {
+  background-color: #2A1E15;
+}
+
+.role-changer-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

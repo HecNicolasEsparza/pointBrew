@@ -18,7 +18,9 @@ export default function Profile() {
 
   if (loading) {
     return (
+      
       <MockupLayout title="Point Brew">
+        <div className="espacio"></div>
         <div className="profile-container">
           <div className="loading">Cargando...</div>
         </div>
@@ -32,6 +34,7 @@ export default function Profile() {
 
   return (
     <MockupLayout title="Point Brew">
+      <div className="espacio"></div>
       <div className="profile-container">
         <div className="profile-header">
           <div className="profile-avatar">
