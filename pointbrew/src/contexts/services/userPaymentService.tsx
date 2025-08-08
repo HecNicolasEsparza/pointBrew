@@ -36,7 +36,7 @@ export const addPaymentMethod = async (data: UserPaymentRequest): Promise<void> 
       userId: data.user_id,
       methodId: data.method_id,
       cardHolderName: data.card_holder_name,
-      cardNumber: data.card_number, // número completo
+      cardNumber: data.card_number,
       cardExpiry: data.card_expiry,
       cardBrand: data.card_brand,
       isDefault: data.is_default
@@ -49,12 +49,11 @@ export const addPaymentMethod = async (data: UserPaymentRequest): Promise<void> 
   }
 };
 
-// GET: Obtener métodos de pago de un usuario
 export const getUserPaymentMethods = async (userId: number): Promise<UserPaymentMethod[]> => {
   try {
     const response = await axios.get(`${BACKEND_ROUTE}/user-payment/${userId}`);
     console.log('Respuesta del backend:', response.data);
-    return response.data.data; // ✅ accede al array correcto
+    return response.data.data;
   } catch (error) {
     console.error("Error al obtener métodos de pago:", error);
     throw error;
